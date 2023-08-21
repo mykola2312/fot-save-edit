@@ -2,6 +2,7 @@ use std::env;
 use std::str;
 use std::fs;
 use inflate::inflate_bytes_zlib;
+pub mod save;
 
 fn main() {
     let args: Vec<_> = env::args().collect();

@@ -7,3 +7,4 @@ edition = "2021"
 
 [dependencies]
 inflate = "0.4.5"
+thiserror = "1.0.47"
