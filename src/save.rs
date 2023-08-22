@@ -54,26 +54,19 @@ impl Save {
                 offsets.push(i);
             }
         }
+        if offsets.is_empty() {
+            return Err(anyhow!("no offsets found"));
+        }
+        offsets.push(file_end);
 
         let mut worlds: Vec<World> = Vec::new();
-        for i in offsets.chunks(2) {
-            let offset = i[0];
-            let end = i.get(1).unwrap_or(&file_end);
-            match World::decode(&raw, offset, *end - offset) {
+        for i in offsets.windows(2) {
+            match World::decode(&raw, i[0], i[1] - i[0]) {
                 Ok(world) => worlds.push(world),
-                Err(e) => println!("world 0x{:x} decode error {}", offset, e)
+                Err(e) => println!("world 0x{:x} decode error {}", i[0], e)
             };
         }
 
         Ok(Self { raw, worlds })
-
-        /*let offset = match offsets.last() {
-            Some(offset) => *offset,
-            None => return Err(anyhow!("no world offset found"))
-        };
-        let size = raw.len() - offset;
-        let world = World::decode(&raw, offset, size)?;
-
-        Ok(Self { raw, world })*/
     }
 }
