@@ -12,5 +12,7 @@ fn main() {
     };*/
     
     let save = Save::load(Path::new(save_path)).expect("load save");
-    dbg!(save);
+    for w in save.worlds {
+        println!("World {:x} size {}", w.offset, w.size);
+    }
 }
