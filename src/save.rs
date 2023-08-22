@@ -6,8 +6,10 @@ use std::fs::OpenOptions;
 use std::path::Path;
 use anyhow::anyhow;
 use anyhow::Result;
+use deflate::Compression;
 use inflate::inflate_bytes_zlib;
 use deflate::deflate_bytes_zlib;
+use deflate::deflate_bytes_zlib_conf;
 
 #[derive(Debug)]
 pub struct World {
@@ -80,18 +82,37 @@ impl Save {
 
     pub fn save(&self, path: &Path) -> Result<()> {
         let mut file = OpenOptions::new()
-            .create(true).write(true).open(path)?;
+            .create(true).truncate(true).write(true).open(path)?;
 
         // write unknown block
-        let unk_size = match self.worlds.first() {
+        /*let unk_size = match self.worlds.first() {
             Some(w) => w.offset - 1,
             None => return Err(anyhow!("no offsets found"))
         };
         file.write(&self.raw[..unk_size])?;
 
         for world in self.worlds.iter() {
+            file.write(&self.raw[world.offset..world.offset+0x12])?;
             file.write(&world.encode())?;
+        }*/
+
+        const START: usize = 0x99A84;
+        const END: usize = 0xD1B1E;
+        let world = self.worlds.last().unwrap();
+        file.write(&self.raw[..START])?;
+        
+        file.write(&self.raw[world.offset..world.offset+0x13])?;
+        {
+            let enc = world.encode();
+            let real_len = END - START;
+            println!("enc len {} real_len {}", enc.len(), real_len);
+            file.write(&enc)?;
+            if (enc.len() < real_len) {
+                file.write(&vec![0; real_len - enc.len()])?;
+            }
         }
+
+        file.write(&self.raw[END..])?;
 
         Ok(())
     }
