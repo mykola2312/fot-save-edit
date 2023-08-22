@@ -7,4 +7,5 @@ edition = "2021"
 
 [dependencies]
 anyhow = "1.0.75"
+deflate = "1.0.0"
 inflate = "0.4.5"

@@ -1,9 +1,13 @@
-use std::fs;
+use std::io::Write;
 use std::str;
+use std::fs;
+use std::fs::File;
+use std::fs::OpenOptions;
 use std::path::Path;
 use anyhow::anyhow;
 use anyhow::Result;
 use inflate::inflate_bytes_zlib;
+use deflate::deflate_bytes_zlib;
 
 #[derive(Debug)]
 pub struct World {
@@ -22,6 +26,10 @@ impl World {
             .map_err(|e| anyhow!(e))?;
 
         Ok(Self { offset, size, data })
+    }
+
+    fn encode(&self) -> Vec<u8> {
+        deflate_bytes_zlib(&self.data)
     }
 
     pub fn dump(&self, path: &Path) -> Result<()> {
@@ -68,5 +76,23 @@ impl Save {
         }
 
         Ok(Self { raw, worlds })
+    }
+
+    pub fn save(&self, path: &Path) -> Result<()> {
+        let mut file = OpenOptions::new()
+            .create(true).write(true).open(path)?;
+
+        // write unknown block
+        let unk_size = match self.worlds.first() {
+            Some(w) => w.offset - 1,
+            None => return Err(anyhow!("no offsets found"))
+        };
+        file.write(&self.raw[..unk_size])?;
+
+        for world in self.worlds.iter() {
+            file.write(&world.encode())?;
+        }
+
+        Ok(())
     }
 }
