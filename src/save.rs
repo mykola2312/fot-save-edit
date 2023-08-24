@@ -70,12 +70,12 @@ impl Save {
         offsets.push(file_end);
 
         let mut worlds: Vec<World> = Vec::new();
-        for i in offsets.windows(2) {
+        /*for i in offsets.windows(2) {
             match World::decode(&raw, i[0], i[1] - i[0]) {
                 Ok(world) => worlds.push(world),
                 Err(e) => println!("world 0x{:x} decode error {}", i[0], e)
             };
-        }
+        }*/
 
         Ok(Self { raw, worlds })
     }
@@ -97,14 +97,16 @@ impl Save {
         }*/
 
         const START: usize = 0x99A84;
-        const END: usize = 0xD1B1E;
-        let world = self.worlds.last().unwrap();
+        const END: usize = 0xD1B1E; //0xD1B1E;
+        const SIZE: usize = 0x38088;
+        //let world = self.worlds.last().unwrap();
+        let world = World::decode(&self.raw, START, END - START)?;
         file.write(&self.raw[..START])?;
         
         file.write(&self.raw[world.offset..world.offset+0x13])?;
         {
             let enc = world.encode();
-            let real_len = END - START;
+            let real_len = SIZE;
             println!("enc len {} real_len {}", enc.len(), real_len);
             file.write(&enc)?;
             if (enc.len() < real_len) {
@@ -112,7 +114,7 @@ impl Save {
             }
         }
 
-        file.write(&self.raw[END..])?;
+        file.write(&self.raw[END+1..])?;
 
         Ok(())
     }
