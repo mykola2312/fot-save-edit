@@ -1,15 +1,12 @@
 use std::io::Write;
 use std::str;
 use std::fs;
-use std::fs::File;
 use std::fs::OpenOptions;
 use std::path::Path;
 use anyhow::anyhow;
 use anyhow::Result;
-use deflate::Compression;
 use inflate::inflate_bytes_zlib;
 use deflate::deflate_bytes_zlib;
-use deflate::deflate_bytes_zlib_conf;
 
 #[derive(Debug)]
 pub struct World {

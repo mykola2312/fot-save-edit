@@ -1,7 +1,8 @@
 use std::env;
 use std::path::Path;
-pub mod save;
-use save::Save;
+
+mod fot;
+use fot::save::Save;
 
 fn main() {
     let args: Vec<_> = env::args().collect();
@@ -10,6 +11,7 @@ fn main() {
         Some(path) => path,
         None => "out.bin"
     };*/
+    
     
     let save = Save::load(Path::new(save_path)).expect("load save");
     for w in save.worlds.iter() {
