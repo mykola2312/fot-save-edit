@@ -7,6 +7,7 @@ use std::path::Path;
 use memmem::{Searcher, TwoWaySearcher};
 use anyhow::Result;
 
+#[derive(Debug)]
 pub struct Raw {
     pub offset: usize,
     pub size: usize,
