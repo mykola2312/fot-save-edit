@@ -80,6 +80,8 @@ impl Save {
 
     pub fn save(&self, path: &Path) -> Result<()> {
         let raw = Raw { offset: 0, size: self.raw.len(), mem: self.raw.clone() };
+        println!("found world at {:x}", raw.find_str_backwards("<world>").unwrap());
+
 
         const START: usize = 0x99A84;
         const END: usize = 0xD1B1E; //0xD1B1E;
