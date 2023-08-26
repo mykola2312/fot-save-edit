@@ -5,9 +5,6 @@ use std::fs::OpenOptions;
 use std::path::Path;
 use anyhow::Result;
 
-// I can use traits to dynamically implement encode/decode for every header
-// or I can just pass Vec<Block> with already encoded data to patch file
-
 pub struct Raw {
     pub offset: usize,
     pub size: usize,
