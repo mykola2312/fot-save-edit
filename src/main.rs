@@ -13,11 +13,6 @@ fn main() {
     };*/
     
     
-    /*let save = Save::load(Path::new(save_path)).expect("load save");
-    for w in save.worlds.iter() {
-        println!("World {:x} size {}", w.offset, w.size);
-    }*/
-
     let save = Save::load(Path::new(save_path)).expect("load save");
     save.save(Path::new("out.sav")).expect("failed to save");
 }
