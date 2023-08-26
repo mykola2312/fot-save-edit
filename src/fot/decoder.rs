@@ -1,5 +1,4 @@
 use std::str;
-use anyhow::anyhow;
 use anyhow::Result;
 use crate::fot::raw::Raw;
 
@@ -18,7 +17,7 @@ impl Decoder for String {
     }
 
     fn encode(&self) -> Raw {
-        let mut str = self.clone().into_bytes();
+        let mut str = self.as_bytes().to_vec();
         str.push(0);
         Raw { offset: 0, size: str.len(), mem: str}
     }
