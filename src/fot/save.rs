@@ -7,7 +7,9 @@ use anyhow::anyhow;
 use anyhow::Result;
 use inflate::inflate_bytes_zlib;
 use deflate::deflate_bytes_zlib;
+use crate::fot::decoder::Decoder;
 use crate::fot::raw::Raw;
+use crate::fot::decoder;
 
 #[derive(Debug)]
 pub struct World {
@@ -95,6 +97,13 @@ impl Save {
         blocks.push(Raw {offset: START+0x13, size: SIZE, mem: enc});
 
         raw.assemble_file(path, blocks)?;
+
+        Ok(())
+    }
+
+    pub fn test(&self) -> Result<()> {
+        let a = "hello".to_string().encode();
+        dbg!(a);
 
         Ok(())
     }

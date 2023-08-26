@@ -18,5 +18,6 @@ fn main() {
         println!("World {:x} size {}", w.offset, w.size);
     }
 
-    save.save(Path::new("out.sav")).expect("failed to save");
+    //save.save(Path::new("out.sav")).expect("failed to save");
+    save.test().expect("test");
 }
