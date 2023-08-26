@@ -30,6 +30,7 @@ dependencies = [
  "anyhow",
  "deflate",
  "inflate",
+ "memmem",
 ]
 
 [[package]]
@@ -40,3 +41,9 @@ checksum = "1cdb29978cc5797bd8dcc8e5bf7de604891df2a8dc576973d71a281e916db2ff"
 dependencies = [
  "adler32",
 ]
+
+[[package]]
+name = "memmem"
+version = "0.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a64a92489e2744ce060c349162be1c5f33c6969234104dbd99ddb5feb08b8c15"
