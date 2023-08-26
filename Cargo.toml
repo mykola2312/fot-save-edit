@@ -7,6 +7,7 @@ edition = "2021"
 
 [dependencies]
 anyhow = "1.0.75"
+byteorder = "1.4.3"
 deflate = "1.0.0"
 inflate = "0.4.5"
 memmem = "0.1.1"
