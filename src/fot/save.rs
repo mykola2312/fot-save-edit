@@ -10,6 +10,7 @@ use deflate::deflate_bytes_zlib;
 use crate::fot::decoder::Decoder;
 use crate::fot::raw::Raw;
 use crate::fot::decoder;
+use crate::fot::tag::Tag;
 
 #[derive(Debug)]
 pub struct World {
@@ -102,8 +103,9 @@ impl Save {
     }
 
     pub fn test(&self) -> Result<()> {
-        let a = "hello".to_string().encode();
-        dbg!(a);
+        let raw = Raw { offset: 0, size: self.raw.len(), mem: self.raw.clone() };
+        let tag = Tag::decode(&raw, 0x99A84, 7);
+        dbg!(&tag);
 
         Ok(())
     }
