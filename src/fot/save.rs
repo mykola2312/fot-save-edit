@@ -79,42 +79,6 @@ impl Save {
     }
 
     pub fn save(&self, path: &Path) -> Result<()> {
-        let mut file = OpenOptions::new()
-            .create(true).truncate(true).write(true).open(path)?;
-
-        // write unknown block
-        /*let unk_size = match self.worlds.first() {
-            Some(w) => w.offset - 1,
-            None => return Err(anyhow!("no offsets found"))
-        };
-        file.write(&self.raw[..unk_size])?;
-
-        for world in self.worlds.iter() {
-            file.write(&self.raw[world.offset..world.offset+0x12])?;
-            file.write(&world.encode())?;
-        }*/
-
-        // determine world block size be next campaign
-        /*const START: usize = 0x99A84;
-        const END: usize = 0xD1B1E; //0xD1B1E;
-        const SIZE: usize = 0x38088;
-        //let world = self.worlds.last().unwrap();
-        let world = World::decode(&self.raw, START, END - START)?;
-        file.write(&self.raw[..START])?;
-        
-        file.write(&self.raw[world.offset..world.offset+0x13])?;
-        {
-            let enc = world.encode();
-            let real_len = SIZE;
-            println!("enc len {} real_len {}", enc.len(), real_len);
-            file.write(&enc)?;
-            if (enc.len() < real_len) {
-                file.write(&vec![0; real_len - enc.len()])?;
-            }
-        }
-
-        file.write(&self.raw[END+1..])?;*/
-
         let raw = Raw { offset: 0, size: self.raw.len(), mem: self.raw.clone() };
 
         const START: usize = 0x99A84;
