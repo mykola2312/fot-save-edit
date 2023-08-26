@@ -7,6 +7,7 @@ use anyhow::anyhow;
 use anyhow::Result;
 use inflate::inflate_bytes_zlib;
 use deflate::deflate_bytes_zlib;
+use crate::fot::raw::Raw;
 
 #[derive(Debug)]
 pub struct World {
@@ -93,7 +94,8 @@ impl Save {
             file.write(&world.encode())?;
         }*/
 
-        const START: usize = 0x99A84;
+        // determine world block size be next campaign
+        /*const START: usize = 0x99A84;
         const END: usize = 0xD1B1E; //0xD1B1E;
         const SIZE: usize = 0x38088;
         //let world = self.worlds.last().unwrap();
@@ -111,7 +113,22 @@ impl Save {
             }
         }
 
-        file.write(&self.raw[END+1..])?;
+        file.write(&self.raw[END+1..])?;*/
+
+        let raw = Raw { offset: 0, size: self.raw.len(), mem: self.raw.clone() };
+
+        const START: usize = 0x99A84;
+        const END: usize = 0xD1B1E; //0xD1B1E;
+        const SIZE: usize = 0x38088;
+        //let world = self.worlds.last().unwrap();
+        let world = World::decode(&self.raw, START, END - START)?;
+        let enc = world.encode();
+
+        let mut blocks: Vec<Raw> = Vec::new();
+        blocks.push(Raw {offset: START, size: 0x13, mem: self.raw[START..START+0x13].to_vec()});
+        blocks.push(Raw {offset: START+0x13, size: SIZE, mem: enc});
+
+        raw.assemble_file(path, blocks)?;
 
         Ok(())
     }
