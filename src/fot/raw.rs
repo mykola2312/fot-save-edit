@@ -25,10 +25,15 @@ impl Raw {
         search.search_in(&self.mem[offset..])
     }
 
-    pub fn find_all_str(&self, str: &str) -> Vec<usize> {
-        let mut offsets: Vec<usize> = Vec::new();
+    pub fn find_str_backwards(&self, str: &str) -> Option<usize> {
+        for i in (0..self.mem.len()-str.len()).step_by(1024).rev() {
+            match self.find_str(str, i) {
+                Some(offset) => return Some(i+offset),
+                None => continue
+            };
+        }
 
-        offsets
+        None
     }
 
     pub fn assemble_file(&self, path: &Path, blocks: Vec<Raw>) -> Result<()> {
