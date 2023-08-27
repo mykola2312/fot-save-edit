@@ -1,6 +1,6 @@
-string format - uint32_t len, 31 bit represents encoding where 0 is UTF-7 (ASCII), and 1 is UTF-16 (WCS-2)
+FString format - uint32_t len, 31 bit represents encoding where 0 is UTF-7 (ASCII), and 1 is UTF-16 (WCS-2)
 
-tag format ?
+Tag format
 <TAG>\0version\0
 
 /*<zar>
@@ -15,12 +15,11 @@ next zar = <zar> + 0x1A + unk5
 0xBC22 + (0x100<<2) = unk5 0x7659*/
 
 <saveh>
-+0x0A - int16_t ?
-+0x0B - 4 strings.
-    1. uknown
-    2. name
-    3. location
-    4. date
+    uint8_t unk1
+    FString unknown
+    FString name
+    FString location
+    FString date
 
 <campaign_save>
     uint32_t unk1 - used in calloc, unk1 * 0x10C
@@ -28,6 +27,7 @@ next zar = <zar> + 0x1A + unk5
 <world>
     uint32_t uncompressed_size;
     uint32_t uncompressed_size;
+    *compressed world data*
 
 <sgd>
     uint8_t unk1[0x48]
@@ -37,3 +37,15 @@ next zar = <zar> + 0x1A + unk5
         uint32_t ?
         uint32_t M - num strings
         FString[M]
+
+<SSG>
+    uint8_t unk1[0x14]
+
+<entity_file>
+    uint32_t N
+    FString[N]
+    uint16_t <esh> count
+    count times
+        uint32_t unk1
+        uint16_t ?
+        uint16_t ? (0xFFFF = no <esh>)
