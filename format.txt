@@ -28,3 +28,12 @@ next zar = <zar> + 0x1A + unk5
 <world>
     uint32_t uncompressed_size;
     uint32_t uncompressed_size;
+
+<sgd>
+    uint8_t unk1[0x48]
+    uint32_t N - num strings
+    FString[N]
+    N times
+        uint32_t ?
+        uint32_t M - num strings
+        FString[M]
