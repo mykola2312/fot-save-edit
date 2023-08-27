@@ -4,12 +4,12 @@ tag format ?
 <TAG>\0version\0
 
 /*<zar>
-	uint32_t unk1
-	uint32_t unk2
-	uint8_t unk3 ?
-	uint32_t unk4
-	0x46C - <zar> + 0x15 + (unk4 << 2) - B2 00
-	0x46D - unk5
+    uint32_t unk1
+    uint32_t unk2
+    uint8_t unk3 ?
+    uint32_t unk4
+    0x46C - <zar> + 0x15 + (unk4 << 2) - B2 00
+    0x46D - unk5
 
 next zar = <zar> + 0x1A + unk5
 0xBC22 + (0x100<<2) = unk5 0x7659*/
@@ -17,14 +17,14 @@ next zar = <zar> + 0x1A + unk5
 <saveh>
 +0x0A - int16_t ?
 +0x0B - 4 strings.
-	1. uknown
-	2. name
-	3. location
-	4. date
+    1. uknown
+    2. name
+    3. location
+    4. date
 
 <campaign_save>
-	uint32_t unk1 - used in calloc, unk1 * 0x10C
+    uint32_t unk1 - used in calloc, unk1 * 0x10C
 
 <world>
-	uint32_t uncompressed_size;
-	uint32_t uncompressed_size;
+    uint32_t uncompressed_size;
+    uint32_t uncompressed_size;
