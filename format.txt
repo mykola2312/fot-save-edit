@@ -54,6 +54,6 @@ next zar = <zar> + 0x1A + unk5
     uint32_t N
     N times
         FString name
-        uint32_t unk1
+        uint32_t type
         uint32_t dataLen
         uint8_t data[dataLen]
