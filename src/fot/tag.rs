@@ -8,12 +8,6 @@ pub struct Tag {
     pub version: String
 }
 
-impl Tag {
-    pub fn get_tag_len(&self) -> usize {
-        self.name.len() + 1 + self.version.len() + 1
-    }
-}
-
 impl Decoder for Tag {
     fn decode(raw: &Raw, offset: usize, size: usize) -> Result<Self> {
         let name = String::decode(raw, offset, size)?;
@@ -22,9 +16,13 @@ impl Decoder for Tag {
     }
 
     fn encode(&self) -> Raw {
-        Raw::join(0, self.get_tag_len(), &mut [
+        Raw::join(0, self.get_enc_len(), &mut [
             self.name.encode(),
             self.version.encode()
         ])
+    }
+
+    fn get_enc_len(&self) -> usize {
+        self.name.get_enc_len() + self.version.get_enc_len()
     }
 }

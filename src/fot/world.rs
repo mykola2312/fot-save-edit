@@ -49,4 +49,8 @@ impl Decoder for World {
             Raw { offset: Self::WORLD_HDR_LEN, size: data.len(), mem: data}
         ])
     }
+
+    fn get_enc_len(&self) -> usize {
+        Self::WORLD_HDR_LEN + self.data.mem.len()
+    }
 }
