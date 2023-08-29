@@ -25,10 +25,10 @@ impl Decoder for FString {
     fn decode(raw: &Raw, offset: usize, _: usize) -> Result<Self> {
         let mut rdr = Cursor::new(&raw.mem[offset..]);
         let flen = rdr.read_u32::<LittleEndian>()? as usize;
-        let len = flen ^ (1<<31);
+        let len = flen & !(1<<31);
         let start = offset + 4;
         if flen & (1<<31) == 0 { // ANSI
-            let str = str::from_utf8(&raw.mem[start..start+len])?;
+            let (str, _, _) = WINDOWS_1251.decode(&raw.mem[start..start+len]);
             Ok(FString { encoding: FStringEncoding::ANSI, enc_len: len, str: str.to_string() })
         } else { // WCS2
             let chars: Vec<u8> = raw.mem[start..start+len*2]
@@ -42,8 +42,9 @@ impl Decoder for FString {
         let mut buf = vec![0u8; 4];
         let mut wdr = Cursor::new(&mut buf[..]);
         if self.encoding == FStringEncoding::ANSI {
-            wdr.write_u32::<LittleEndian>(self.str.len() as u32 ^ (1<<31))?;
-            buf.append(&mut self.str.clone().into_bytes());
+            let (chars, _, _) = WINDOWS_1251.encode(self.str.as_str());
+            wdr.write_u32::<LittleEndian>(chars.len() as u32 & !(1<<31))?;
+            buf.extend(chars.iter());
         } else { // WCS2
             let (chars, _, _) = WINDOWS_1251.encode(self.str.as_str());
             wdr.write_u32::<LittleEndian>(chars.len() as u32 | (1<<31))?;
