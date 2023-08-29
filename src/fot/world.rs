@@ -45,7 +45,7 @@ impl Decoder for World {
         Ok(World { tag, uncompressed_size, data: Raw { offset, size, mem: data } })
     }
 
-    fn encode(&self) -> Raw {
+    fn encode(&self) -> Result<Raw> {
         let mut hdr = [0u8; 8];
         {
             let mut wdr = Cursor::new(&mut hdr[..]);
@@ -54,11 +54,11 @@ impl Decoder for World {
         }
         let data = deflate_bytes_zlib(&self.data.mem);
 
-        Raw::join(self.data.offset, self.data.size, &mut [
-            self.tag.encode(),
+        Ok(Raw::join(self.data.offset, self.data.size, &mut [
+            self.tag.encode()?,
             Raw { offset: Self::WORLD_TAG_LEN, size: 8, mem: hdr.to_vec()},
             Raw { offset: Self::WORLD_HDR_LEN, size: data.len(), mem: data}
-        ])
+        ]))
     }
 
     fn get_enc_size(&self) -> usize {

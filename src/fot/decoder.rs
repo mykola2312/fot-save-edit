@@ -4,7 +4,7 @@ use super::raw::Raw;
 
 pub trait Decoder: Sized {
     fn decode(raw: &Raw, offset: usize, size: usize) -> Result<Self>;
-    fn encode(&self) -> Raw;
+    fn encode(&self) -> Result<Raw>;
     fn get_enc_size(&self) -> usize;
 }
 
@@ -17,10 +17,10 @@ impl Decoder for String {
         }
     }
 
-    fn encode(&self) -> Raw {
+    fn encode(&self) -> Result<Raw> {
         let mut str = self.as_bytes().to_vec();
         str.push(0);
-        Raw { offset: 0, size: str.len(), mem: str}
+        Ok(Raw { offset: 0, size: str.len(), mem: str})
     }
 
     fn get_enc_size(&self) -> usize {

@@ -52,7 +52,7 @@ impl Save {
 
     pub fn save(&self, path: &Path) -> Result<()> {
         self.raw.assemble_file(path, vec![
-            self.world.encode()
+            self.world.encode()?
         ])?;
 
         Ok(())

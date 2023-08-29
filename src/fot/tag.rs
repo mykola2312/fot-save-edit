@@ -15,11 +15,11 @@ impl Decoder for Tag {
         Ok(Tag {name, version})
     }
 
-    fn encode(&self) -> Raw {
-        Raw::join(0, self.get_enc_size(), &mut [
-            self.name.encode(),
-            self.version.encode()
-        ])
+    fn encode(&self) -> Result<Raw> {
+        Ok(Raw::join(0, self.get_enc_size(), &mut [
+            self.name.encode()?,
+            self.version.encode()?
+        ]))
     }
 
     fn get_enc_size(&self) -> usize {

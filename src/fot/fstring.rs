@@ -38,21 +38,21 @@ impl Decoder for FString {
         }
     }
 
-    fn encode(&self) -> Raw {
+    fn encode(&self) -> Result<Raw> {
         let mut buf = vec![0u8; 4];
         let mut wdr = Cursor::new(&mut buf[..]);
         if self.encoding == FStringEncoding::ANSI {
-            let _ = wdr.write_u32::<LittleEndian>(self.str.len() as u32 ^ (1<<31));
+            wdr.write_u32::<LittleEndian>(self.str.len() as u32 ^ (1<<31))?;
             buf.append(&mut self.str.clone().into_bytes());
         } else { // WCS2
             let (chars, _, _) = WINDOWS_1251.encode(self.str.as_str());
-            let _ = wdr.write_u32::<LittleEndian>(chars.len() as u32 | (1<<31));
+            wdr.write_u32::<LittleEndian>(chars.len() as u32 | (1<<31))?;
             for &c in chars.iter() {
                 buf.push(c);
                 buf.push(0);
             }
         };
-        Raw { offset: 0, size: buf.len(), mem: buf }
+        Ok(Raw { offset: 0, size: buf.len(), mem: buf })
     }
 
     fn get_enc_size(&self) -> usize {
