@@ -1,6 +1,7 @@
 use super::decoder::Decoder;
 use super::raw::Raw;
 use super::tag::Tag;
+use super::fstring::FString;
 use anyhow::anyhow;
 use anyhow::Result;
 use std::io::Cursor;
@@ -19,6 +20,13 @@ pub struct World {
 impl World {
     const WORLD_TAG_LEN: usize = 11;
     const WORLD_HDR_LEN: usize = 0x13;
+
+    pub fn test(&self) -> Result<()> {
+        let a = FString::decode(&self.data, 0xF6, 0)?;
+        dbg!(&a);
+
+        Ok(())
+    }
 }
 
 impl Decoder for World {
