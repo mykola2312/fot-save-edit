@@ -4,7 +4,6 @@ use anyhow::Result;
 use std::io::Cursor;
 use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
 use encoding_rs::WINDOWS_1251;
-use std::str;
 
 // FString - Fallout
 
@@ -41,12 +40,11 @@ impl Decoder for FString {
     fn encode(&self) -> Result<Raw> {
         let mut buf = vec![0u8; 4];
         let mut wdr = Cursor::new(&mut buf[..]);
+        let (chars, _, _) = WINDOWS_1251.encode(self.str.as_str());
         if self.encoding == FStringEncoding::ANSI {
-            let (chars, _, _) = WINDOWS_1251.encode(self.str.as_str());
             wdr.write_u32::<LittleEndian>(chars.len() as u32 & !(1<<31))?;
             buf.extend(chars.iter());
         } else { // WCS2
-            let (chars, _, _) = WINDOWS_1251.encode(self.str.as_str());
             wdr.write_u32::<LittleEndian>(chars.len() as u32 | (1<<31))?;
             for &c in chars.iter() {
                 buf.push(c);
