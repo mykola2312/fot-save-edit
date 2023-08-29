@@ -50,7 +50,7 @@ impl Decoder for World {
         ])
     }
 
-    fn get_enc_len(&self) -> usize {
+    fn get_enc_size(&self) -> usize {
         Self::WORLD_HDR_LEN + self.data.mem.len()
     }
 }

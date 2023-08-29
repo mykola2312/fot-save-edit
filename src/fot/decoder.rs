@@ -5,7 +5,7 @@ use crate::fot::raw::Raw;
 pub trait Decoder: Sized {
     fn decode(raw: &Raw, offset: usize, size: usize) -> Result<Self>;
     fn encode(&self) -> Raw;
-    fn get_enc_len(&self) -> usize;
+    fn get_enc_size(&self) -> usize;
 }
 
 impl Decoder for String {
@@ -23,7 +23,7 @@ impl Decoder for String {
         Raw { offset: 0, size: str.len(), mem: str}
     }
 
-    fn get_enc_len(&self) -> usize {
+    fn get_enc_size(&self) -> usize {
         self.len() + 1
     }
 }
