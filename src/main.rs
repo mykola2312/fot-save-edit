@@ -11,8 +11,7 @@ fn main() {
         Some(path) => path,
         None => "out.bin"
     };*/
-    
-    
+
     let save = Save::load(Path::new(save_path)).expect("load save");
     save.world.test().expect("test");
     //save.save(Path::new("out.sav")).expect("failed to save");

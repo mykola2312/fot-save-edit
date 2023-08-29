@@ -1,16 +1,16 @@
-use std::str;
-use std::path::Path;
+use super::decoder::Decoder;
+use super::raw::Raw;
+use super::world::World;
 use anyhow::anyhow;
 use anyhow::Result;
 use byteorder::{ByteOrder, LittleEndian};
-use super::raw::Raw;
-use super::world::World;
-use super::decoder::Decoder;
+use std::path::Path;
+use std::str;
 
 #[derive(Debug)]
 pub struct Save {
     pub raw: Raw,
-    pub world: World
+    pub world: World,
 }
 
 impl Save {
@@ -21,21 +21,21 @@ impl Save {
         let raw = Raw::load_file(path)?;
         let world_offset = match raw.find_str_backwards(Self::WORLD_TAG) {
             Some(offset) => offset,
-            None => return Err(anyhow!("no world found in file"))
+            None => return Err(anyhow!("no world found in file")),
         };
-        
+
         let mut world_size: usize = 0;
         {
             let campaign = match raw.find_str(Self::CAMPAIGN_TAG, world_offset) {
                 Some(campaign) => world_offset + campaign,
-                None => return Err(anyhow!("no campaign found after world"))
+                None => return Err(anyhow!("no campaign found after world")),
             };
 
-            for i in (campaign-256..campaign).rev() {
-                let fsize = LittleEndian::read_u32(&raw.mem[i..i+4]);
-                if fsize & (1<<31) != 0 {
-                    let size = fsize ^ (1<<31);
-                    if size as usize <= campaign-i {
+            for i in (campaign - 256..campaign).rev() {
+                let fsize = LittleEndian::read_u32(&raw.mem[i..i + 4]);
+                if fsize & (1 << 31) != 0 {
+                    let size = fsize ^ (1 << 31);
+                    if size as usize <= campaign - i {
                         world_size = i - world_offset;
                         break;
                     }
@@ -51,9 +51,7 @@ impl Save {
     }
 
     pub fn save(&self, path: &Path) -> Result<()> {
-        self.raw.assemble_file(path, vec![
-            self.world.encode()?
-        ])?;
+        self.raw.assemble_file(path, vec![self.world.encode()?])?;
 
         Ok(())
     }
