@@ -55,6 +55,9 @@ impl Decoder for FString {
     }
 
     fn get_enc_size(&self) -> usize {
-        4 + self.enc_len
+        4 + match self.encoding {
+            FStringEncoding::ANSI => self.enc_len,
+            FStringEncoding::WCS2 => self.enc_len * 2
+        }
     }
 }
