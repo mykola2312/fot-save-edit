@@ -14,5 +14,6 @@ fn main() {
     
     
     let save = Save::load(Path::new(save_path)).expect("load save");
-    save.save(Path::new("out.sav")).expect("failed to save");
+    save.world.test().expect("test");
+    //save.save(Path::new("out.sav")).expect("failed to save");
 }
