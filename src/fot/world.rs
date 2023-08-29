@@ -1,3 +1,5 @@
+use crate::fot::fstring::FStringEncoding;
+
 use super::decoder::Decoder;
 use super::raw::Raw;
 use super::tag::Tag;
@@ -22,11 +24,15 @@ impl World {
     const WORLD_HDR_LEN: usize = 0x13;
 
     pub fn test(&self) -> Result<()> {
-        let a = FString::decode(&self.data, 0xA2, 0)?;
+        let mut a = FString::decode(&self.data, 0xA2, 0)?;
         dbg!(&a);
 
-        let b = a.encode();
+        a.encoding = FStringEncoding::ANSI;
+        let b = a.encode()?;
         dbg!(&b);
+
+        let c = FString::decode(&b, 0, 0)?;
+        dbg!(&c);
 
         Ok(())
     }
