@@ -24,15 +24,39 @@ impl World {
     const WORLD_HDR_LEN: usize = 0x13;
 
     pub fn test(&self) -> Result<()> {
-        let mut a = FString::decode(&self.data, 0xA2, 0)?;
-        dbg!(&a);
+        let sgd_start: usize = 0x4E;
+        let mut cur = sgd_start;
+        cur += Tag::decode(&self.data, sgd_start, 0)?.get_enc_size();
+        cur += 0x48;
+        
+        let mut rdr = Cursor::new(&self.data.mem[..]);
+        rdr.set_position(cur as u64);
+        let N = rdr.read_u32::<LittleEndian>()?;
+        
+        let mut names: Vec<FString> = Vec::new();
+        cur += 4;
+        for _ in 0..N {
+            let name = FString::decode(&self.data, cur, 0)?;
+            cur += name.get_enc_size();
+            names.push(name);
+        }
+        //dbg!(names);
 
-        a.encoding = FStringEncoding::ANSI;
-        let b = a.encode()?;
-        dbg!(&b);
-
-        let c = FString::decode(&b, 0, 0)?;
-        dbg!(&c);
+        let unk1 = rdr.read_u32::<LittleEndian>()?;
+        cur += 4;
+        for _ in 0..N {
+            rdr.set_position(cur as u64);
+            let M = rdr.read_u32::<LittleEndian>()?;
+            cur += 4;
+            dbg!(M, cur);
+            let mut strings: Vec<FString> = Vec::new();
+            for _ in 0..M {
+                let str = FString::decode(&self.data, cur, 0)?;
+                cur += str.get_enc_size();
+                strings.push(str);
+            }
+            dbg!(strings);
+        }
 
         Ok(())
     }
