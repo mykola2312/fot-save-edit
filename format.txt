@@ -32,11 +32,11 @@ next zar = <zar> + 0x1A + unk5
 <sgd>
     uint8_t unk1[0x48]
     uint32_t N - num strings
-    FString[N]
-    uint32_t ?
-    N times
-        uint32_t M - num strings
-        FString[M]
+    FString[N] - names
+    uint32_t M
+    M times - replics (dialog lines)
+        uint32_t K - num strings
+        FString[K]
 
 <SSG>
     uint8_t unk1[0x14]
