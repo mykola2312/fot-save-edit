@@ -6,7 +6,7 @@ use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
 use encoding_rs::WINDOWS_1251;
 use std::str;
 
-// FString - Fallout String
+// FString - Fallout
 
 #[derive(Debug, PartialEq)]
 pub enum FStringEncoding {
@@ -17,6 +17,7 @@ pub enum FStringEncoding {
 #[derive(Debug)]
 pub struct FString {
     encoding: FStringEncoding,
+    enc_len: usize,
     str: String
 }
 
@@ -28,24 +29,24 @@ impl Decoder for FString {
         let start = offset + 4;
         if flen & (1<<31) == 0 { // ANSI
             let str = str::from_utf8(&raw.mem[start..start+len])?;
-            Ok(FString { encoding: FStringEncoding::ANSI, str: str.to_string() })
+            Ok(FString { encoding: FStringEncoding::ANSI, enc_len: len, str: str.to_string() })
         } else { // WCS2
             let chars: Vec<u8> = raw.mem[start..start+len*2]
                 .iter().step_by(2).copied().collect();
             let (str, _, _) = WINDOWS_1251.decode(&chars);
-            Ok(FString { encoding: FStringEncoding::WCS2, str: str.to_string() })
+            Ok(FString { encoding: FStringEncoding::WCS2, enc_len: len, str: str.to_string() })
         }
     }
 
     fn encode(&self) -> Raw {
-        let mut buf = vec![0u8, 4];
+        let mut buf = vec![0u8; 4];
         let mut wdr = Cursor::new(&mut buf[..]);
         if self.encoding == FStringEncoding::ANSI {
             let _ = wdr.write_u32::<LittleEndian>(self.str.len() as u32 ^ (1<<31));
             buf.append(&mut self.str.clone().into_bytes());
         } else { // WCS2
-            let _ = wdr.write_u32::<LittleEndian>(self.str.len() as u32 | (1<<31));
             let (chars, _, _) = WINDOWS_1251.encode(self.str.as_str());
+            let _ = wdr.write_u32::<LittleEndian>(chars.len() as u32 | (1<<31));
             for &c in chars.iter() {
                 buf.push(c);
                 buf.push(0);
@@ -55,9 +56,6 @@ impl Decoder for FString {
     }
 
     fn get_enc_size(&self) -> usize {
-        match self.encoding {
-            FStringEncoding::ANSI => 4 + self.str.len(),
-            FStringEncoding::WCS2 => 4 + self.str.len() * 2
-        }
+        4 + self.enc_len
     }
 }
