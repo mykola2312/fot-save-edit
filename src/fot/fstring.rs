@@ -16,9 +16,9 @@ pub enum FStringEncoding {
 
 #[derive(Debug)]
 pub struct FString {
-    encoding: FStringEncoding,
-    enc_len: usize,
-    str: String
+    pub encoding: FStringEncoding,
+    pub enc_len: usize,
+    pub str: String
 }
 
 impl Decoder for FString {
