@@ -1,27 +1,31 @@
-use std::io::BufWriter;
-use std::io::Write;
-use std::str;
+use anyhow::Result;
+use memmem::{Searcher, TwoWaySearcher};
 use std::fs;
 use std::fs::OpenOptions;
+use std::io::BufWriter;
+use std::io::Write;
 use std::path::Path;
-use memmem::{Searcher, TwoWaySearcher};
-use anyhow::Result;
+use std::str;
 
 #[derive(Debug)]
 pub struct Raw {
     pub offset: usize,
     pub size: usize,
-    pub mem: Vec<u8>
+    pub mem: Vec<u8>,
 }
 
 impl Raw {
-    pub fn join(offset: usize, size: usize, raws: &mut [Raw], ) -> Raw {
+    pub fn join(offset: usize, size: usize, raws: &mut [Raw]) -> Raw {
         let mut mem: Vec<u8> = Vec::new();
         for raw in raws.iter_mut() {
             mem.append(&mut raw.mem);
         }
 
-        Raw { offset: offset, size: size, mem: mem }
+        Raw {
+            offset: offset,
+            size: size,
+            mem: mem,
+        }
     }
 
     pub fn find_str(&self, str: &str, offset: usize) -> Option<usize> {
@@ -30,10 +34,10 @@ impl Raw {
     }
 
     pub fn find_str_backwards(&self, str: &str) -> Option<usize> {
-        for i in (0..self.mem.len()-str.len()).step_by(1024).rev() {
+        for i in (0..self.mem.len() - str.len()).step_by(1024).rev() {
             match self.find_str(str, i) {
-                Some(offset) => return Some(i+offset),
-                None => continue
+                Some(offset) => return Some(i + offset),
+                None => continue,
             };
         }
 
@@ -42,15 +46,23 @@ impl Raw {
 
     pub fn load_file(path: &Path) -> Result<Raw> {
         let mem = fs::read(path)?;
-        
-        Ok(Self { offset: 0, size: mem.len(), mem })
+
+        Ok(Self {
+            offset: 0,
+            size: mem.len(),
+            mem,
+        })
     }
 
     pub fn assemble_file(&self, path: &Path, blocks: Vec<Raw>) -> Result<()> {
-        let mut file = BufWriter::new(OpenOptions::new()
-            .create(true).truncate(true).write(true).open(path)?);
-        
-        
+        let mut file = BufWriter::new(
+            OpenOptions::new()
+                .create(true)
+                .truncate(true)
+                .write(true)
+                .open(path)?,
+        );
+
         let mut sorted = blocks;
         sorted.sort_by(|a, b| a.offset.cmp(&b.offset));
 
@@ -63,7 +75,7 @@ impl Raw {
             file.write(&block.mem)?;
             // padding
             if block.size > block.mem.len() {
-                for _ in 0..block.size - block.mem.len() { 
+                for _ in 0..block.size - block.mem.len() {
                     file.write(&[0])?;
                 }
             }
