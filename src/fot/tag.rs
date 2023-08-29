@@ -1,6 +1,6 @@
 use anyhow::Result;
-use crate::fot::raw::Raw;
-use crate::fot::decoder::Decoder;
+use super::raw::Raw;
+use super::decoder::Decoder;
 
 #[derive(Debug)]
 pub struct Tag {

@@ -1,6 +1,6 @@
-use crate::fot::decoder::Decoder;
-use crate::fot::raw::Raw;
-use crate::fot::tag::Tag;
+use super::decoder::Decoder;
+use super::raw::Raw;
+use super::tag::Tag;
 use anyhow::anyhow;
 use anyhow::Result;
 use std::io::Cursor;
