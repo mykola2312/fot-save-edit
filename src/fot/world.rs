@@ -22,8 +22,11 @@ impl World {
     const WORLD_HDR_LEN: usize = 0x13;
 
     pub fn test(&self) -> Result<()> {
-        let a = FString::decode(&self.data, 0xF6, 0)?;
+        let a = FString::decode(&self.data, 0xA2, 0)?;
         dbg!(&a);
+
+        let b = a.encode();
+        dbg!(&b);
 
         Ok(())
     }
