@@ -1,6 +1,6 @@
 use std::str;
 use anyhow::Result;
-use crate::fot::raw::Raw;
+use super::raw::Raw;
 
 pub trait Decoder: Sized {
     fn decode(raw: &Raw, offset: usize, size: usize) -> Result<Self>;

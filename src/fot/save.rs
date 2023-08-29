@@ -3,8 +3,8 @@ use std::path::Path;
 use anyhow::anyhow;
 use anyhow::Result;
 use byteorder::{ByteOrder, LittleEndian};
-use crate::fot::raw::Raw;
-use crate::fot::world::World;
+use super::raw::Raw;
+use super::world::World;
 
 use super::decoder::Decoder;
 
