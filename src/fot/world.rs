@@ -2,11 +2,12 @@ use super::decoder::Decoder;
 use super::fstring::FString;
 use super::raw::Raw;
 use super::sgd::SGD;
+use super::ssg::SSG;
 use super::stream::ReadStream;
 use super::tag::Tag;
 use anyhow::anyhow;
 use anyhow::Result;
-use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
+use byteorder::{LittleEndian, WriteBytesExt};
 use deflate::deflate_bytes_zlib;
 use inflate::inflate_bytes_zlib;
 use std::io::Cursor;
@@ -20,6 +21,7 @@ pub struct World {
 
     pub mission: FString,
     pub sgd: SGD,
+    pub ssg: SSG,
 }
 
 impl World {
@@ -51,6 +53,7 @@ impl Decoder for World {
 
         let mission: FString = rd.read(0)?;
         let sgd: SGD = rd.read(0)?;
+        let ssg: SSG = rd.read(0)?;
 
         Ok(World {
             tag,
@@ -58,6 +61,7 @@ impl Decoder for World {
             data,
             mission,
             sgd,
+            ssg,
         })
     }
 
