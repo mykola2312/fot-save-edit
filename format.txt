@@ -49,11 +49,12 @@ next zar = <zar> + 0x1A + unk5
         uint32_t unk1
         uint16_t ?
         uint16_t ? (0xFFFF = no <esh>)
+        <esh>
 
 <esh>
     uint32_t N
     N times
         FString name
         uint32_t type
-        uint32_t dataLen
-        uint8_t data[dataLen]
+        uint32_t dataSize
+        uint8_t data[dataSize]

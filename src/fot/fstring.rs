@@ -7,13 +7,13 @@ use std::io::Cursor;
 
 // FString - Fallout
 
-#[derive(Debug, Hash, PartialEq, Eq)]
+#[derive(Debug, Hash, PartialEq, Eq, Clone)]
 pub enum FStringEncoding {
     ANSI,
     WCS2,
 }
 
-#[derive(Debug, Hash, PartialEq, Eq)]
+#[derive(Debug, Hash, PartialEq, Eq, Clone)]
 pub struct FString {
     pub encoding: FStringEncoding,
     pub enc_len: usize,
