@@ -1,3 +1,5 @@
+use std::ops::Index;
+
 use super::decoder::Decoder;
 use super::fstring::FString;
 use super::raw::Raw;
@@ -48,10 +50,27 @@ impl Decoder for SGD {
     }
 
     fn encode(&self) -> Result<Raw> {
-        todo!();
+        let mut wd = WriteStream::new(self.enc_size);
+        wd.write(&self.tag)?;
+        wd.write_bytes(&self.unk1);
+
+        wd.write_u32(self.dialogs.len() as u32)?;
+        for name in self.dialogs.keys() {
+            wd.write(name)?;
+        }
+
+        wd.write_u32(self.dialogs.len() as u32)?;
+        for lines in self.dialogs.values() {
+            wd.write_u32(lines.len() as u32)?;
+            for line in lines.iter() {
+                wd.write(line)?;
+            }
+        }
+        
+        Ok(wd.into_raw(0, 0))
     }
 
     fn get_enc_size(&self) -> usize {
-        todo!()
+        self.enc_size
     }
 }
