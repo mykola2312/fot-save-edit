@@ -1,5 +1,6 @@
 use super::decoder::Decoder;
 use super::raw::Raw;
+use anyhow::anyhow;
 use anyhow::Result;
 use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
 use std::io::Cursor;
@@ -10,9 +11,9 @@ pub struct ReadStream<'a> {
 }
 
 impl<'a> ReadStream<'a> {
-    pub fn new(raw: &Raw, start: usize) -> ReadStream {
+    pub fn new(raw: &Raw, offset: usize) -> ReadStream {
         let mut rdr = Cursor::new(&raw.mem[..]);
-        rdr.set_position(start as u64);
+        rdr.set_position(offset as u64);
         ReadStream { raw: raw, rdr: rdr }
     }
 
@@ -22,6 +23,14 @@ impl<'a> ReadStream<'a> {
 
     pub fn skip(&mut self, size: usize) {
         self.rdr.set_position(self.rdr.position() + size as u64);
+    }
+
+    pub fn read_bytes(&mut self, size: usize) -> Result<Vec<u8>> {
+        if self.offset() + size > self.raw.mem.len() {
+            Err(anyhow!("read_bytes size is bigger than buffer"))
+        } else {
+            Ok(self.raw.mem[self.offset()..self.offset() + size].to_vec())
+        }
     }
 
     pub fn read<T: Decoder>(&mut self, size: usize) -> Result<T> {

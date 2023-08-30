@@ -1,6 +1,6 @@
-use super::stream::{ReadStream, WriteStream};
 use super::decoder::Decoder;
 use super::raw::Raw;
+use super::stream::{ReadStream, WriteStream};
 use anyhow::Result;
 
 #[derive(Debug)]
@@ -20,7 +20,7 @@ impl Decoder for Tag {
     fn encode(&self) -> Result<Raw> {
         let mut wd = WriteStream::new(self.get_enc_size());
         wd.write(&self.name)?;
-        wd.write(&self.version)?; 
+        wd.write(&self.version)?;
         Ok(wd.into_raw(0, self.get_enc_size()))
     }
 
