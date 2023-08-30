@@ -38,7 +38,7 @@ impl Decoder for SGD {
                 lines.push(rd.read::<FString>(0)?);
             }
 
-            dialogs.insert(names.remove(m), lines);
+            dialogs.insert(names.remove(0), lines);
         }
 
         let enc_size = rd.offset() - offset;
