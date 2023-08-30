@@ -29,7 +29,9 @@ impl<'a> ReadStream<'a> {
         if self.offset() + size > self.raw.mem.len() {
             Err(anyhow!("read_bytes size is bigger than buffer"))
         } else {
-            Ok(self.raw.mem[self.offset()..self.offset() + size].to_vec())
+            let buf = self.raw.mem[self.offset()..self.offset() + size].to_vec();
+            self.skip(size);
+            Ok(buf)
         }
     }
 
