@@ -67,7 +67,7 @@ impl Decoder for SGD {
                 wd.write(line)?;
             }
         }
-        
+
         Ok(wd.into_raw(0, 0))
     }
 

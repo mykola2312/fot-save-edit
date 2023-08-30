@@ -1,9 +1,9 @@
 use super::decoder::Decoder;
-use super::stream::ReadStream;
 use super::fstring::FString;
 use super::raw::Raw;
-use super::tag::Tag;
 use super::sgd::SGD;
+use super::stream::ReadStream;
+use super::tag::Tag;
 use anyhow::anyhow;
 use anyhow::Result;
 use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
@@ -17,6 +17,9 @@ pub struct World {
     pub uncompressed_size: u32,
 
     pub data: Raw,
+
+    pub mission: FString,
+    pub sgd: SGD,
 }
 
 impl World {
@@ -24,34 +27,37 @@ impl World {
     const WORLD_HDR_LEN: usize = 0x13;
 
     pub fn test(&self) -> Result<()> {
-        let sgd_start: usize = 0x4E;
-        let sgd = SGD::decode(&self.data, sgd_start, 0)?;
-        dbg!(&sgd);
-        let sgd2 = sgd.encode()?;
-        assert_ne!(self.data.mem[sgd_start..sgd.get_enc_size()], sgd2.mem, "SGD encoding failed");
-
         Ok(())
     }
 }
 
 impl Decoder for World {
     fn decode(raw: &Raw, offset: usize, size: usize) -> Result<Self> {
-        let tag = Tag::decode(raw, offset, Self::WORLD_TAG_LEN)?;
+        let mut enc = ReadStream::new(raw, offset);
 
-        let mut rdr = Cursor::new(&raw.mem[offset + Self::WORLD_TAG_LEN..]);
-        let uncompressed_size = rdr.read_u32::<LittleEndian>()?;
+        let tag: Tag = enc.read(Self::WORLD_TAG_LEN)?;
+        let uncompressed_size = enc.read_u32()?;
+        enc.skip(4);
 
-        let data_start = offset + Self::WORLD_HDR_LEN;
-        let data =
-            inflate_bytes_zlib(&raw.mem[data_start..data_start + size]).map_err(|e| anyhow!(e))?;
+        let data = {
+            let inflated = inflate_bytes_zlib(enc.as_bytes(size)?).map_err(|e| anyhow!(e))?;
+            Raw {
+                offset,
+                size,
+                mem: inflated,
+            }
+        };
+        let mut rd = ReadStream::new(&data, 0);
+
+        let mission: FString = rd.read(0)?;
+        let sgd: SGD = rd.read(0)?;
+
         Ok(World {
             tag,
             uncompressed_size,
-            data: Raw {
-                offset,
-                size,
-                mem: data,
-            },
+            data,
+            mission,
+            sgd,
         })
     }
 

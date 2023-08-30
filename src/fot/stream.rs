@@ -25,14 +25,18 @@ impl<'a> ReadStream<'a> {
         self.rdr.set_position(self.rdr.position() + size as u64);
     }
 
-    pub fn read_bytes(&mut self, size: usize) -> Result<Vec<u8>> {
+    pub fn as_bytes(&mut self, size: usize) -> Result<&[u8]> {
         if self.offset() + size > self.raw.mem.len() {
-            Err(anyhow!("read_bytes size is bigger than buffer"))
+            Err(anyhow!("as_bytes/read_bytes size is bigger than buffer"))
         } else {
-            let buf = self.raw.mem[self.offset()..self.offset() + size].to_vec();
+            let buf = &self.raw.mem[self.offset()..self.offset() + size];
             self.skip(size);
             Ok(buf)
         }
+    }
+
+    pub fn read_bytes(&mut self, size: usize) -> Result<Vec<u8>> {
+        Ok(self.as_bytes(size)?.to_vec())
     }
 
     pub fn read<T: Decoder>(&mut self, size: usize) -> Result<T> {
