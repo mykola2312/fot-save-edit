@@ -27,7 +27,9 @@ impl World {
         let sgd_start: usize = 0x4E;
         let sgd = SGD::decode(&self.data, sgd_start, 0)?;
         dbg!(&sgd);
-        
+        let sgd2 = sgd.encode()?;
+        assert_ne!(self.data.mem[sgd_start..sgd.get_enc_size()], sgd2.mem, "SGD encoding failed");
+
         Ok(())
     }
 }
