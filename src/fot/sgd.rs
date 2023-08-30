@@ -8,6 +8,7 @@ use super::tag::Tag;
 use anyhow::Result;
 use indexmap::IndexMap;
 
+#[derive(Debug)]
 pub struct SGD {
     tag: Tag,
     unk1: Vec<u8>,

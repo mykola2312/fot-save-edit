@@ -1,8 +1,9 @@
 use super::decoder::Decoder;
+use super::stream::ReadStream;
 use super::fstring::FString;
 use super::raw::Raw;
-use super::stream::ReadStream;
 use super::tag::Tag;
+use super::sgd::SGD;
 use anyhow::anyhow;
 use anyhow::Result;
 use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
@@ -24,29 +25,9 @@ impl World {
 
     pub fn test(&self) -> Result<()> {
         let sgd_start: usize = 0x4E;
-        let mut sgd = ReadStream::new(&self.data, sgd_start);
-        let _ = sgd.read::<Tag>(0)?;
-        sgd.skip(0x48);
-
-        let n = sgd.read_u32()?;
-        dbg!(sgd.offset(), n);
-        let mut names: Vec<FString> = Vec::with_capacity(n as usize);
-        for _ in 0..n {
-            names.push(sgd.read::<FString>(0)?);
-        }
-        dbg!(names);
-
-        let unk1 = sgd.read_u32()?;
-        dbg!(unk1);
-        for _ in 0..n {
-            let m = sgd.read_u32()?;
-            let mut replics: Vec<FString> = Vec::with_capacity(m as usize);
-            for _ in 0..m {
-                replics.push(sgd.read::<FString>(0)?);
-            }
-            dbg!(replics);
-        }
-
+        let sgd = SGD::decode(&self.data, sgd_start, 0)?;
+        dbg!(&sgd);
+        
         Ok(())
     }
 }
