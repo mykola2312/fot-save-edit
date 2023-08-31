@@ -43,12 +43,12 @@ next zar = <zar> + 0x1A + unk5
 
 <entity_file>
     uint32_t N
-    FString[N]
+    FString[N] - entity names
     uint16_t <esh> count
     count times
         uint32_t unk1
         uint16_t ?
-        uint16_t ? (0xFFFF = no <esh>)
+        uint16_t name_idx
         <esh>
 
 <esh>
