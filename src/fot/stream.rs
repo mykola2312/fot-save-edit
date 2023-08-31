@@ -39,6 +39,9 @@ impl<'a> ReadStream<'a> {
         Ok(self.as_bytes(size)?.to_vec())
     }
 
+    // "size" is not required to be actual size, it's only
+    // a hint for Decoder::decode. Most of the structures are
+    // dynamically determining their decoding and encoding sizes
     pub fn read<T: Decoder>(&mut self, size: usize) -> Result<T> {
         let val = T::decode(&self.raw, self.offset(), size)?;
         self.skip(val.get_enc_size());

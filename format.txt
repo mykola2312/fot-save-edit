@@ -58,3 +58,22 @@ next zar = <zar> + 0x1A + unk5
         uint32_t type
         uint32_t dataSize
         uint8_t data[dataSize]
+
+esh data types
+1 - bool, 1 byte
+2 - float, 4 byte
+3 - int32_t/uint32_t
+4 - FString
+5 - entity? FString?
+8 - FString (Sprite)
+11 - esbin
+13 - frame, 48 bytes -- multiply all numbers by 4.0
+    uint8_t unk1[36]
+    float c
+    float b
+    float a
+14 - rect, 16 bytes
+    int32_t top
+    int32_t left
+    int32_t right
+    int32_t bottom

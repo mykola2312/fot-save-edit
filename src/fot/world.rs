@@ -3,6 +3,7 @@ use super::fstring::FString;
 use super::raw::Raw;
 use super::sgd::SGD;
 use super::ssg::SSG;
+use super::esh::ESH;
 use super::stream::ReadStream;
 use super::tag::Tag;
 use anyhow::anyhow;
@@ -29,6 +30,10 @@ impl World {
     const WORLD_HDR_LEN: usize = 0x13;
 
     pub fn test(&self) -> Result<()> {
+        let mut rd = ReadStream::new(&self.data, 0x14AC);
+        let esh: ESH = rd.read(0)?;
+        dbg!(&esh);
+
         Ok(())
     }
 }
