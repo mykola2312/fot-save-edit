@@ -7,9 +7,38 @@ use anyhow::Result;
 use indexmap::IndexMap;
 
 #[derive(Debug)]
-pub struct ESHValue {
-    pub data_type: u32,
-    pub data: Vec<u8>
+pub struct ESHEntityFlags {
+    pub entity_id: u16,
+    pub flags: u16
+}
+
+#[derive(Debug)]
+pub struct ESHFrame {
+    pub unk1: Vec<u8>,
+    pub a: f32,
+    pub b: f32,
+    pub c: f32
+}
+
+#[derive(Debug)]
+pub struct ESHRect {
+    pub top: i32,
+    pub left: i32,
+    pub right: i32,
+    pub bottom: i32
+}
+
+#[derive(Debug)]
+pub enum ESHValue {
+    Bool(bool),
+    Float(f32),
+    Int(i32),
+    String(FString),
+    Sprite(FString),
+    Binary(Vec<u8>),
+    EntityFlags(ESHEntityFlags),
+    Frame(ESHFrame),
+    Rect(ESHRect)
 }
 
 #[derive(Debug)]
@@ -31,7 +60,7 @@ impl Decoder for ESH {
             let data_type = rd.read_u32()?;
             let data_size = rd.read_u32()? as usize;
             let data = rd.read_bytes(data_size)?;
-            props.insert(name, ESHValue { data_type, data });
+            //props.insert(name, ESHValue { data_type, data });
         }
 
         let enc_size = rd.offset() - offset;
