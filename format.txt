@@ -66,6 +66,7 @@ esh data types
 4 - FString
 5 - entity? FString?
 8 - FString (Sprite)
+9 - FString
 11 - esbin
 12 - entity flags
     uint16_t entity_id
@@ -83,3 +84,6 @@ esh data types
     int32_t left
     int32_t right
     int32_t bottom
+
+21 - FString
+25 - FString
