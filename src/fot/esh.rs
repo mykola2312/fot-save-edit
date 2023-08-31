@@ -6,11 +6,13 @@ use super::stream::{ReadStream, WriteStream};
 use anyhow::Result;
 use indexmap::IndexMap;
 
+#[derive(Debug)]
 pub struct ESHValue {
     pub data_type: u32,
     pub data: Vec<u8>
 }
 
+#[derive(Debug)]
 pub struct ESH {
     pub tag: Tag,
     pub props: IndexMap<FString, ESHValue>,
