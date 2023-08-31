@@ -35,9 +35,15 @@ impl World {
         let esh: ESH = rd.read(0)?;
         dbg!(&esh);
 
+        let esh1 = Raw {
+            offset: 0,
+            size: 0,
+            mem: self.data.mem[0x14AC..0x14AC+esh.get_enc_size()].to_vec()
+        };
+        esh1.dump(Path::new("esh1.bin"))?;
         let esh2 = esh.encode()?;
         esh2.dump(Path::new("esh2.bin"))?;
-        assert_eq!(&self.data.mem[0x14AC..0x14AC+esh.get_enc_size()], &esh2.mem, "ESH encoding test passed");
+        assert_eq!(esh1.mem, esh2.mem, "ESH encoding test passed");
 
         Ok(())
     }

@@ -18,6 +18,10 @@ pub struct ESHEntityFlags {
     pub flags: u16,
 }
 
+impl ESHEntityFlags {
+    const SIZE: usize = 4;
+}
+
 #[derive(Debug)]
 pub struct ESHFrame {
     pub unk1: Vec<u8>,
@@ -26,12 +30,20 @@ pub struct ESHFrame {
     pub c: f32,
 }
 
+impl ESHFrame {
+    const SIZE: usize = 48;
+}
+
 #[derive(Debug)]
 pub struct ESHRect {
     pub top: i32,
     pub left: i32,
     pub right: i32,
     pub bottom: i32,
+}
+
+impl ESHRect {
+    const SIZE: usize = 16;
 }
 
 #[derive(Debug)]
@@ -75,8 +87,7 @@ impl Decoder for ESHValue {
             Self::TYPE_STRING => ESHValue::String(rd.read::<FString>(0)?),
             Self::TYPE_SPRITE => ESHValue::Sprite(rd.read::<FString>(0)?),
             Self::TYPE_ESBIN => {
-                let bin_size = rd.read_u32()?;
-                ESHValue::Binary(rd.read_bytes(bin_size as usize)?)
+                ESHValue::Binary(rd.read_bytes(data_size as usize)?)
             }
             Self::TYPE_ENTTITYFLAGS => {
                 let entity_id = rd.read_u16()?;
@@ -156,14 +167,14 @@ impl Decoder for ESHValue {
             }
             ESHValue::EntityFlags(eflags) => {
                 wd.write_u32(Self::TYPE_ENTTITYFLAGS)?;
-                wd.write_u32(4)?;
+                wd.write_u32(ESHEntityFlags::SIZE as u32)?;
 
                 wd.write_u16(eflags.entity_id)?;
                 wd.write_u16(eflags.flags)?;
             }
             ESHValue::Frame(frame) => {
                 wd.write_u32(Self::TYPE_FRAME)?;
-                wd.write_u32(0x24)?;
+                wd.write_u32(ESHFrame::SIZE as u32)?;
 
                 wd.write_bytes(&frame.unk1);
                 wd.write_f32(frame.c / 4.)?;
@@ -172,7 +183,7 @@ impl Decoder for ESHValue {
             }
             ESHValue::Rect(rect) => {
                 wd.write_u32(Self::TYPE_RECT)?;
-                wd.write_u32(0x10)?;
+                wd.write_u32(ESHRect::SIZE as u32)?;
 
                 wd.write_i32(rect.top)?;
                 wd.write_i32(rect.left)?;
@@ -194,9 +205,9 @@ impl Decoder for ESHValue {
                 ESHValue::String(str) => str.get_enc_size(),
                 ESHValue::Sprite(spr) => spr.get_enc_size(),
                 ESHValue::Binary(bin) => bin.len(),
-                ESHValue::EntityFlags(_) => 4,
-                ESHValue::Frame(_) => 0x30,
-                ESHValue::Rect(_) => 0x10,
+                ESHValue::EntityFlags(_) => ESHEntityFlags::SIZE,
+                ESHValue::Frame(_) => ESHFrame::SIZE,
+                ESHValue::Rect(_) => ESHRect::SIZE,
             }
     }
 }

@@ -98,8 +98,8 @@ impl WriteStream {
     }
 
     pub fn write_bytes(&mut self, bytes: &[u8]) {
-        self.buf.get_mut().extend(bytes.iter());
         self.skip(bytes.len());
+        self.buf.get_mut().extend(bytes.iter());
     }
 
     pub fn write<T: Decoder>(&mut self, val: &T) -> Result<()> {
