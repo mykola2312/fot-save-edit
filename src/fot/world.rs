@@ -32,23 +32,29 @@ impl World {
     pub fn test(&self) -> Result<()> {
         let mut rd = ReadStream::new(&self.data, 0x1038);
         let _: Tag = rd.read(0)?;
+
         let n = rd.read_u32()? as usize;
+        let mut types: Vec<FString> = Vec::with_capacity(n);
         for i in 0..n {
-            let name: FString = rd.read(0)?;
-            println!("{}\t{}", i, name);
+            let ent_type: FString = rd.read(0)?;
+            println!("{}\t{}", i, &ent_type);
+            types.push(ent_type);
         }
 
-        /*let esh_count = rd.read_u16()?;
+        let esh_count = rd.read_u16()?;
+        let unk1 = rd.read_u32()?;
         dbg!(esh_count);
-        for _ in 0..esh_count {
-            let unk1 = rd.read_u32()?;
-            let unk2 = rd.read_u16()?;
-            let unk3 = rd.read_u16()?;
-            print!("{} {} {}", unk1, unk2, unk3);
-            if unk3 != 0xFFFF {
-                let _: ESH = rd.read(0)?;
+        for i in 1..esh_count {
+            let unk2 = rd.read_u32()?;
+            let type_idx = rd.read_u16()?;
+            if type_idx == 0xFFFF {
+                continue;
             }
-        }*/
+
+            let name = &types[type_idx as usize];
+            println!("offset {:x} idx {} unk1 {} name {}", rd.offset(), i, unk2, name);
+            let _: ESH = rd.read(0)?;
+        }
 
         Ok(())
     }
