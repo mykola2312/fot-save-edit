@@ -52,8 +52,16 @@ impl<'a> ReadStream<'a> {
         Ok(self.rdr.read_u16::<LittleEndian>()?)
     }
 
+    pub fn read_i32(&mut self) -> Result<i32> {
+        Ok(self.rdr.read_i32::<LittleEndian>()?)
+    }
+
     pub fn read_u32(&mut self) -> Result<u32> {
         Ok(self.rdr.read_u32::<LittleEndian>()?)
+    }
+
+    pub fn read_f32(&mut self) -> Result<f32> {
+        Ok(self.rdr.read_f32::<LittleEndian>()?)
     }
 }
 
@@ -95,7 +103,15 @@ impl WriteStream {
         Ok(self.buf.write_u16::<LittleEndian>(val)?)
     }
 
+    pub fn write_i32(&mut self, val: i32) -> Result<()> {
+        Ok(self.buf.write_i32::<LittleEndian>(val)?)
+    }
+
     pub fn write_u32(&mut self, val: u32) -> Result<()> {
         Ok(self.buf.write_u32::<LittleEndian>(val)?)
+    }
+
+    pub fn write_f32(&mut self, val: f32) -> Result<()> {
+        Ok(self.buf.write_f32::<LittleEndian>(val)?)
     }
 }
