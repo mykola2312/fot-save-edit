@@ -74,7 +74,7 @@ esh data types
 
 13 - frame, 48 bytes -- multiply all numbers by 4.0. I have strong feeling that it is
     // a 3x4 translation transform matrix, because one of the dumps showed it was
-    uint8_t unk1[36]
+    uint8_t unk1[0x24]
     float c
     float b
     float a
