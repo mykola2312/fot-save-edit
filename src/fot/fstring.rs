@@ -4,6 +4,8 @@ use anyhow::Result;
 use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
 use encoding_rs::WINDOWS_1251;
 use std::io::Cursor;
+use std::borrow::Borrow;
+use std::fmt;
 
 // FString - Fallout
 
@@ -13,7 +15,7 @@ pub enum FStringEncoding {
     WCS2,
 }
 
-#[derive(Debug, Hash, PartialEq, Eq, Clone)]
+#[derive(Debug, Hash, Eq, Clone)]
 pub struct FString {
     pub encoding: FStringEncoding,
     pub enc_len: usize,
@@ -77,5 +79,23 @@ impl Decoder for FString {
             FStringEncoding::ANSI => self.enc_len,
             FStringEncoding::WCS2 => self.enc_len * 2,
         }
+    }
+}
+
+impl PartialEq for FString {
+    fn eq(&self, other: &Self) -> bool {
+        self.str == other.str
+    }
+}
+
+impl Borrow<str> for FString {
+    fn borrow(&self) -> &str {
+        self.str.as_str()
+    }
+}
+
+impl fmt::Display for FString {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "\"{}\"", self.str)
     }
 }
