@@ -33,17 +33,9 @@ impl World {
     pub fn test(&self) -> Result<()> {
         let mut rd = ReadStream::new(&self.data, 0x14AC);
         let esh: ESH = rd.read(0)?;
-        dbg!(&esh);
-
-        let esh1 = Raw {
-            offset: 0,
-            size: 0,
-            mem: self.data.mem[0x14AC..0x14AC+esh.get_enc_size()].to_vec()
-        };
-        esh1.dump(Path::new("esh1.bin"))?;
-        let esh2 = esh.encode()?;
-        esh2.dump(Path::new("esh2.bin"))?;
-        assert_eq!(esh1.mem, esh2.mem, "ESH encoding test passed");
+        for (name, value) in esh.props.iter() {
+            println!("{}\t{}", name.str, value);
+        }
 
         Ok(())
     }
