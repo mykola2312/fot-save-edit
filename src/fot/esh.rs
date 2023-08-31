@@ -5,6 +5,8 @@ use super::stream::{ReadStream, WriteStream};
 use super::tag::Tag;
 use anyhow::Result;
 use indexmap::IndexMap;
+use std::fmt::{self, write};
+use std::path::Display;
 
 #[derive(Debug)]
 pub struct ESHUnknown {
@@ -86,9 +88,7 @@ impl Decoder for ESHValue {
             Self::TYPE_INT => ESHValue::Int(rd.read_i32()?),
             Self::TYPE_STRING => ESHValue::String(rd.read::<FString>(0)?),
             Self::TYPE_SPRITE => ESHValue::Sprite(rd.read::<FString>(0)?),
-            Self::TYPE_ESBIN => {
-                ESHValue::Binary(rd.read_bytes(data_size as usize)?)
-            }
+            Self::TYPE_ESBIN => ESHValue::Binary(rd.read_bytes(data_size as usize)?),
             Self::TYPE_ENTTITYFLAGS => {
                 let entity_id = rd.read_u16()?;
                 let flags = rd.read_u16()?;
@@ -212,6 +212,35 @@ impl Decoder for ESHValue {
     }
 }
 
+impl fmt::Display for ESHValue {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            ESHValue::Unknown(unk) => {
+                write!(f, "Unknown type {}, size {}", unk.data_type, unk.data.len())
+            }
+            ESHValue::Bool(val) => write!(f, "{}", val),
+            ESHValue::Float(val) => write!(f, "{}", val),
+            ESHValue::Int(val) => write!(f, "{}", val),
+            ESHValue::String(str) => write!(f, "{}", str.str),
+            ESHValue::Sprite(spr) => write!(f, "{}", spr.str),
+            ESHValue::Binary(bin) => write!(f, "Binary, size {}", bin.len()),
+            ESHValue::EntityFlags(val) => {
+                write!(f, "entity {} flags {:x}", val.entity_id, val.flags)
+            }
+            ESHValue::Frame(val) => {
+                write!(f, "[{},{},{}]", val.a, val.b, val.c)
+            }
+            ESHValue::Rect(val) => {
+                write!(
+                    f,
+                    "[({},{}),({},{})]",
+                    val.top, val.left, val.right, val.bottom
+                )
+            }
+        }
+    }
+}
+
 #[derive(Debug)]
 pub struct ESH {
     pub tag: Tag,
@@ -245,7 +274,7 @@ impl Decoder for ESH {
         wd.write(&self.tag)?;
 
         wd.write_u32(self.props.len() as u32)?;
-        for (name,value) in self.props.iter() {
+        for (name, value) in self.props.iter() {
             wd.write(name)?;
             wd.write(value)?;
         }
