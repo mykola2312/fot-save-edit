@@ -88,4 +88,16 @@ impl Raw {
         file.flush()?;
         Ok(())
     }
+
+    pub fn dump(&self, path: &Path) -> Result<()> {
+        let mut file = BufWriter::new(
+            OpenOptions::new()
+                .create(true)
+                .truncate(true)
+                .write(true)
+                .open(path)?,
+        );
+        file.write_all(&self.mem)?;
+        Ok(())
+    }
 }

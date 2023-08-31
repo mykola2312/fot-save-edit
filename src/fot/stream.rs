@@ -93,12 +93,18 @@ impl WriteStream {
         self.buf.position() as usize
     }
 
+    pub fn skip(&mut self, size: usize) {
+        self.buf.set_position(self.buf.position() + size as u64);
+    }
+
     pub fn write_bytes(&mut self, bytes: &[u8]) {
         self.buf.get_mut().extend(bytes.iter());
+        self.skip(bytes.len());
     }
 
     pub fn write<T: Decoder>(&mut self, val: &T) -> Result<()> {
         let mut raw = val.encode()?;
+        self.skip(raw.mem.len());
         self.buf.get_mut().append(&mut raw.mem);
         Ok(())
     }
