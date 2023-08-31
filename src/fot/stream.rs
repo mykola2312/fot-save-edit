@@ -27,6 +27,7 @@ impl<'a> ReadStream<'a> {
 
     pub fn as_bytes(&mut self, size: usize) -> Result<&[u8]> {
         if self.offset() + size > self.raw.mem.len() {
+            dbg!(self.offset(), size, self.raw.mem.len());
             Err(anyhow!("as_bytes/read_bytes size is bigger than buffer"))
         } else {
             let buf = &self.raw.mem[self.offset()..self.offset() + size];

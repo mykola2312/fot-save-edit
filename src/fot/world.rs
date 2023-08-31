@@ -30,12 +30,25 @@ impl World {
     const WORLD_HDR_LEN: usize = 0x13;
 
     pub fn test(&self) -> Result<()> {
-        let mut rd = ReadStream::new(&self.data, 0x14AC);
-        let esh: ESH = rd.read(0)?;
-        for (name, value) in esh.props.iter() {
-            println!("{}\t{}", name, value);
+        let mut rd = ReadStream::new(&self.data, 0x1038);
+        let _: Tag = rd.read(0)?;
+        let n = rd.read_u32()? as usize;
+        for i in 0..n {
+            let name: FString = rd.read(0)?;
+            println!("{}\t{}", i, name);
         }
-        dbg!(&esh.props["Display Name"]);
+
+        /*let esh_count = rd.read_u16()?;
+        dbg!(esh_count);
+        for _ in 0..esh_count {
+            let unk1 = rd.read_u32()?;
+            let unk2 = rd.read_u16()?;
+            let unk3 = rd.read_u16()?;
+            print!("{} {} {}", unk1, unk2, unk3);
+            if unk3 != 0xFFFF {
+                let _: ESH = rd.read(0)?;
+            }
+        }*/
 
         Ok(())
     }
