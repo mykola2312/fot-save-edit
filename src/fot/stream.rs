@@ -48,6 +48,10 @@ impl<'a> ReadStream<'a> {
         Ok(val)
     }
 
+    pub fn read_u8(&mut self) -> Result<u8> {
+        Ok(self.rdr.read_u8()?)
+    }
+
     pub fn read_u16(&mut self) -> Result<u16> {
         Ok(self.rdr.read_u16::<LittleEndian>()?)
     }
@@ -97,6 +101,10 @@ impl WriteStream {
         let mut raw = val.encode()?;
         self.buf.get_mut().append(&mut raw.mem);
         Ok(())
+    }
+
+    pub fn write_u8(&mut self, val: u8) -> Result<()> {
+        Ok(self.buf.write_u8(val)?)
     }
 
     pub fn write_u16(&mut self, val: u16) -> Result<()> {
