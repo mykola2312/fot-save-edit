@@ -5,6 +5,7 @@ use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
 use encoding_rs::WINDOWS_1251;
 use std::io::Cursor;
 use std::borrow::Borrow;
+use std::hash::{Hash, Hasher};
 use std::fmt;
 
 // FString - Fallout
@@ -15,7 +16,7 @@ pub enum FStringEncoding {
     WCS2,
 }
 
-#[derive(Debug, Hash, Eq, Clone)]
+#[derive(Debug, Eq, Clone)]
 pub struct FString {
     pub encoding: FStringEncoding,
     pub enc_len: usize,
@@ -88,6 +89,12 @@ impl PartialEq for FString {
     }
 }
 
+impl Hash for FString {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.str.hash(state);
+    }
+}
+
 impl Borrow<str> for FString {
     fn borrow(&self) -> &str {
         self.str.as_str()
@@ -96,6 +103,6 @@ impl Borrow<str> for FString {
 
 impl fmt::Display for FString {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "\"{}\"", self.str)
+        write!(f, "{}", self.str)
     }
 }

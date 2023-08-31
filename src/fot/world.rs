@@ -1,7 +1,6 @@
 use super::decoder::Decoder;
 use super::esh::ESH;
 use super::fstring::FString;
-use super::fstring::FStringEncoding;
 use super::raw::Raw;
 use super::sgd::SGD;
 use super::ssg::SSG;
@@ -13,7 +12,6 @@ use byteorder::{LittleEndian, WriteBytesExt};
 use deflate::deflate_bytes_zlib;
 use inflate::inflate_bytes_zlib;
 use std::io::Cursor;
-use std::path::Path;
 
 #[derive(Debug)]
 pub struct World {
