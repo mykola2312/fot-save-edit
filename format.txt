@@ -67,11 +67,17 @@ esh data types
 5 - entity? FString?
 8 - FString (Sprite)
 11 - esbin
-13 - frame, 48 bytes -- multiply all numbers by 4.0
+12 - entity flags
+    uint16_t entity_id
+    uint16_t flags
+
+13 - frame, 48 bytes -- multiply all numbers by 4.0. I have strong feeling that it is
+    // a 3x4 translation transform matrix, because one of the dumps showed it was
     uint8_t unk1[36]
     float c
     float b
     float a
+
 14 - rect, 16 bytes
     int32_t top
     int32_t left
