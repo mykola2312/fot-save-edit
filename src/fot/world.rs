@@ -1,9 +1,9 @@
 use super::decoder::Decoder;
+use super::esh::ESH;
 use super::fstring::FString;
 use super::raw::Raw;
 use super::sgd::SGD;
 use super::ssg::SSG;
-use super::esh::ESH;
 use super::stream::ReadStream;
 use super::tag::Tag;
 use anyhow::anyhow;
@@ -12,6 +12,7 @@ use byteorder::{LittleEndian, WriteBytesExt};
 use deflate::deflate_bytes_zlib;
 use inflate::inflate_bytes_zlib;
 use std::io::Cursor;
+use std::path::Path;
 
 #[derive(Debug)]
 pub struct World {
@@ -33,6 +34,10 @@ impl World {
         let mut rd = ReadStream::new(&self.data, 0x14AC);
         let esh: ESH = rd.read(0)?;
         dbg!(&esh);
+
+        let esh2 = esh.encode()?;
+        esh2.dump(Path::new("esh2.bin"))?;
+        assert_eq!(&self.data.mem[0x14AC..0x14AC+esh.get_enc_size()], &esh2.mem, "ESH encoding test passed");
 
         Ok(())
     }
