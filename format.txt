@@ -43,12 +43,12 @@ next zar = <zar> + 0x1A + unk5
 
 <entity_file>
     uint32_t N
-    FString[N] - entity names
+    FString[N] - entity types
     uint16_t <esh> count
-    count times
-        uint32_t unk1
-        uint16_t ?
-        uint16_t name_idx
+    uint32_t unk1
+    count times - 1 (because entity id are indexed from 1)
+        uint32_t flags?
+        uint16_t type_idx
         <esh>
 
 <esh>
