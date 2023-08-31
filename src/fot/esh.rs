@@ -5,8 +5,7 @@ use super::stream::{ReadStream, WriteStream};
 use super::tag::Tag;
 use anyhow::Result;
 use indexmap::IndexMap;
-use std::fmt::{self, write};
-use std::path::Display;
+use std::fmt;
 
 #[derive(Debug)]
 pub struct ESHUnknown {
@@ -221,8 +220,8 @@ impl fmt::Display for ESHValue {
             ESHValue::Bool(val) => write!(f, "{}", val),
             ESHValue::Float(val) => write!(f, "{}", val),
             ESHValue::Int(val) => write!(f, "{}", val),
-            ESHValue::String(str) => write!(f, "{}", str.str),
-            ESHValue::Sprite(spr) => write!(f, "{}", spr.str),
+            ESHValue::String(str) => write!(f, "{}", str),
+            ESHValue::Sprite(spr) => write!(f, "{}", spr),
             ESHValue::Binary(bin) => write!(f, "Binary, size {}", bin.len()),
             ESHValue::EntityFlags(val) => {
                 write!(f, "entity {} flags {:x}", val.entity_id, val.flags)

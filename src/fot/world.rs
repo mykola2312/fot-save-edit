@@ -1,6 +1,7 @@
 use super::decoder::Decoder;
 use super::esh::ESH;
 use super::fstring::FString;
+use super::fstring::FStringEncoding;
 use super::raw::Raw;
 use super::sgd::SGD;
 use super::ssg::SSG;
@@ -34,8 +35,9 @@ impl World {
         let mut rd = ReadStream::new(&self.data, 0x14AC);
         let esh: ESH = rd.read(0)?;
         for (name, value) in esh.props.iter() {
-            println!("{}\t{}", name.str, value);
+            println!("{}\t{}", name, value);
         }
+        dbg!(&esh.props["Display Name"]);
 
         Ok(())
     }
