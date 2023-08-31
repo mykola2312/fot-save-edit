@@ -3,10 +3,10 @@ use super::raw::Raw;
 use anyhow::Result;
 use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
 use encoding_rs::WINDOWS_1251;
-use std::io::Cursor;
 use std::borrow::Borrow;
-use std::hash::{Hash, Hasher};
 use std::fmt;
+use std::hash::{Hash, Hasher};
+use std::io::Cursor;
 
 // FString - Fallout
 
