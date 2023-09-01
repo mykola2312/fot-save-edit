@@ -52,7 +52,13 @@ impl World {
             }
 
             let name = &types[type_idx as usize];
-            println!("offset {:x} idx {} unk1 {} name {}", rd.offset(), i, unk2, name);
+            println!(
+                "offset {:x} idx {} unk1 {} name {}",
+                rd.offset(),
+                i,
+                unk2,
+                name
+            );
             let _: ESH = rd.read(0)?;
         }
 
@@ -61,7 +67,8 @@ impl World {
 }
 
 impl Decoder for World {
-    fn decode(raw: &Raw, offset: usize, size: usize) -> Result<Self> {
+    type Opt = ();
+    fn decode(raw: &Raw, offset: usize, size: usize, _: Option<()>) -> Result<Self> {
         let mut enc = ReadStream::new(raw, offset);
 
         let tag: Tag = enc.read(Self::WORLD_TAG_LEN)?;
