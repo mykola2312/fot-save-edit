@@ -76,7 +76,8 @@ impl ESHValue {
 }
 
 impl Decoder for ESHValue {
-    fn decode(raw: &Raw, offset: usize, _: usize) -> Result<Self> {
+    type Opt = ();
+    fn decode(raw: &Raw, offset: usize, _: usize, _: Option<()>) -> Result<Self> {
         let mut rd = ReadStream::new(raw, offset);
         let data_type = rd.read_u32()?;
         let data_size = rd.read_u32()?;
@@ -248,7 +249,8 @@ pub struct ESH {
 }
 
 impl Decoder for ESH {
-    fn decode(raw: &Raw, offset: usize, _: usize) -> Result<Self> {
+    type Opt = ();
+    fn decode(raw: &Raw, offset: usize, _: usize, _: Option<()>) -> Result<Self> {
         let mut rd = ReadStream::new(raw, offset);
         let tag: Tag = rd.read(0)?;
 

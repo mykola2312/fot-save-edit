@@ -43,8 +43,17 @@ impl<'a> ReadStream<'a> {
     // "size" is not required to be actual size, it's only
     // a hint for Decoder::decode. Most of the structures are
     // dynamically determining their decoding and encoding sizes
+
+    // read_opt - decode with optional paramters. required for complex structure
+    // with different origins (save / entfile) like entities
+    pub fn read_opt<T: Decoder>(&mut self, size: usize, opt: T::Opt) -> Result<T> {
+        let val = T::decode(&self.raw, self.offset(), size, Some(opt))?;
+        self.skip(val.get_enc_size());
+        Ok(val)
+    }
+
     pub fn read<T: Decoder>(&mut self, size: usize) -> Result<T> {
-        let val = T::decode(&self.raw, self.offset(), size)?;
+        let val = T::decode(&self.raw, self.offset(), size, None)?;
         self.skip(val.get_enc_size());
         Ok(val)
     }

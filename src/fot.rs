@@ -1,4 +1,5 @@
 mod decoder;
+mod entity;
 mod esh;
 mod fstring;
 mod raw;

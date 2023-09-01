@@ -46,7 +46,7 @@ impl Save {
             return Err(anyhow!("Unable to determine world block size"));
         }
 
-        let world = World::decode(&raw, world_offset, world_size)?;
+        let world = World::decode(&raw, world_offset, world_size, None)?;
         Ok(Save { raw, world })
     }
 
