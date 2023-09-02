@@ -16,23 +16,23 @@ pub enum EntityEncoding {
 pub struct EntityList {}
 
 impl EntityList {
-    fn get_entity_encoding(&self) -> EntityEncoding {
+    pub fn get_entity_encoding(&self) -> EntityEncoding {
         todo!();
     }
 
-    fn get_entity_tag(&self) -> &Tag {
+    pub fn get_entity_tag(&self) -> &Tag {
         todo!();
     }
 
-    fn add_new_type(&mut self, name: FString) -> usize {
+    pub fn add_new_type(&mut self, type_name: FString) -> usize {
         todo!();
     }
 
-    fn add_or_get_type(&mut self, name: FString) -> usize {
+    pub fn add_or_get_type(&mut self, type_name: FString) -> usize {
         todo!();
     }
 
-    fn get_type_name(&self, type_idx: usize) -> &FString {
+    pub fn get_type_name(&self, type_idx: usize) -> &FString {
         todo!();
     }
 }

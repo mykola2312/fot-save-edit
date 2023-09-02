@@ -10,7 +10,7 @@ pub trait Decoder: Sized {
 
 pub trait DecoderOpt<Opt>: Sized {
     fn decode(raw: &Raw, offset: usize, size: usize, opt: Opt) -> Result<Self>;
-    fn encode(&self) -> Result<Raw>;
+    fn encode(&self, opt: Opt) -> Result<Raw>;
     fn get_enc_size(&self) -> usize;
 }
 
