@@ -51,6 +51,10 @@ next zar = <zar> + 0x1A + unk5
         uint16_t type_idx
         <esh>
 
+<entity>
+    FString entity type
+    <esh>
+
 <esh>
     uint32_t N
     N times

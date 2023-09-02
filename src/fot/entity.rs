@@ -7,40 +7,38 @@ use super::stream::{ReadStream, WriteStream};
 use anyhow::anyhow;
 use anyhow::Result;
 
-pub enum EntityOrigin {
+pub enum EntityEncoding {
     File,
     World
 }
 
-// FString type should be reference
+pub trait EntityOwner<'a> {
+    fn get_entity_encoding(&self) -> EntityEncoding;
+    fn add_new_type(name: FString) -> usize;
+    fn add_or_get_type(name: FString) -> usize;
+    fn get_type_name(type_idx: usize) -> &'a FString;
+}
 
-pub struct Entity<'a> {
-    origin: EntityOrigin,
-    tag: Option<Tag>,
-    pub id: usize,
+pub struct Entity {
     pub flags: u32,
-    pub type_idx: u16,
-    pub type_name: &'a FString,
+    pub type_idx: usize,
     pub esh: ESH,
     enc_size: usize
 }
 
-pub struct EntityOpt<'b> {
-    pub origin: EntityOrigin,
-    pub flags: u32,
-    pub type_idx: u16,  
-    pub type_name: Option<&'b FString>,
+pub struct EntityOpt {
+    //pub origin: EntityOrigin,
+    pub type_idx: usize
 }
 
-impl<'a> Decoder for Entity<'a> {
-    type Opt = EntityOpt<'a>;
-    fn decode(raw: &Raw, offset: usize, _: usize, opt: Option<Self::Opt>) -> Result<Entity<'a>> {
+impl Decoder for Entity {
+    type Opt = EntityOpt;
+    fn decode(raw: &Raw, offset: usize, _: usize, opt: Option<Self::Opt>) -> Result<Self> {
         let rd = ReadStream::new(raw, offset);
         let opt = match opt {
             Some(opt) => opt,
             None => return Err(anyhow!("no EntityOpt was provided!"))
         };
-
         
         todo!();
     }
