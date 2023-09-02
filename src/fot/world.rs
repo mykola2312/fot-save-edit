@@ -67,7 +67,7 @@ impl World {
 }
 
 impl Decoder for World {
-    type Opt = ();
+    type Opt<'o> = ();
     fn decode(raw: &Raw, offset: usize, size: usize, _: Option<()>) -> Result<Self> {
         let mut enc = ReadStream::new(raw, offset);
 

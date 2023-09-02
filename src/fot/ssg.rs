@@ -11,7 +11,7 @@ pub struct SSG {
 }
 
 impl Decoder for SSG {
-    type Opt = ();
+    type Opt<'o> = ();
     fn decode(raw: &Raw, offset: usize, _: usize, _: Option<()>) -> Result<Self> {
         let mut rd = ReadStream::new(raw, offset);
         let tag: Tag = rd.read(0)?;
