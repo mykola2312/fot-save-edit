@@ -24,8 +24,7 @@ pub struct FString {
 }
 
 impl Decoder for FString {
-    type Opt<'o> = ();
-    fn decode(raw: &Raw, offset: usize, _: usize, _: Option<()>) -> Result<Self> {
+    fn decode(raw: &Raw, offset: usize, _: usize) -> Result<Self> {
         let mut rdr = Cursor::new(&raw.mem[offset..]);
         let flen = rdr.read_u32::<LittleEndian>()? as usize;
         let len = flen & !(1 << 31);

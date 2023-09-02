@@ -67,8 +67,7 @@ impl World {
 }
 
 impl Decoder for World {
-    type Opt<'o> = ();
-    fn decode(raw: &Raw, offset: usize, size: usize, _: Option<()>) -> Result<Self> {
+    fn decode(raw: &Raw, offset: usize, size: usize) -> Result<Self> {
         let mut enc = ReadStream::new(raw, offset);
 
         let tag: Tag = enc.read(Self::WORLD_TAG_LEN)?;
