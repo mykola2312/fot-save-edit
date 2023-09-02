@@ -11,7 +11,7 @@ pub struct ReadStream<'a> {
 }
 
 impl<'a> ReadStream<'a> {
-    pub fn new(raw: &Raw, offset: usize) -> ReadStream {
+    pub fn new(raw: &Raw, offset: usize) -> ReadStream<'a> {
         let mut rdr = Cursor::new(&raw.mem[..]);
         rdr.set_position(offset as u64);
         ReadStream { raw: raw, rdr: rdr }
