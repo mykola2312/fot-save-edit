@@ -46,8 +46,8 @@ impl<'a> ReadStream<'a> {
 
     // read_opt - decode with optional paramters. required for complex structure
     // with different origins (save / entfile) like entities
-    pub fn read_opt<'o, T: DecoderOpt>(&mut self, size: usize, opt: T::Opt<'o>) -> Result<T> {
-        let val = T::decode(&self.raw, self.offset(), size, Some(opt))?;
+    pub fn read_opt<T: DecoderOpt<Opt>, Opt>(&mut self, size: usize, opt: Opt) -> Result<T> {
+        let val = T::decode(&self.raw, self.offset(), size, opt)?;
         self.skip(val.get_enc_size());
         Ok(val)
     }
