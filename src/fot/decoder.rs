@@ -8,9 +8,8 @@ pub trait Decoder: Sized {
     fn get_enc_size(&self) -> usize;
 }
 
-pub trait DecoderOpt: Sized {
-    type Opt<'o>;
-    fn decode(raw: &Raw, offset: usize, size: usize, opt: Option<Self::Opt<'_>>) -> Result<Self>;
+pub trait DecoderOpt<Opt>: Sized {
+    fn decode(raw: &Raw, offset: usize, size: usize, opt: Opt) -> Result<Self>;
     fn encode(&self) -> Result<Raw>;
     fn get_enc_size(&self) -> usize;
 }
