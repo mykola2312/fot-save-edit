@@ -10,7 +10,7 @@ pub struct Tag {
 }
 
 impl Decoder for Tag {
-    type Opt = ();
+    type Opt<'o> = ();
     fn decode(raw: &Raw, offset: usize, size: usize, _: Option<()>) -> Result<Self> {
         let mut rd = ReadStream::new(raw, offset);
         let name: String = rd.read(0)?;

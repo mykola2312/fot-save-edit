@@ -12,11 +12,28 @@ pub enum EntityEncoding {
     World
 }
 
-pub trait EntityOwner<'a> {
-    fn get_entity_encoding(&self) -> EntityEncoding;
-    fn add_new_type(name: FString) -> usize;
-    fn add_or_get_type(name: FString) -> usize;
-    fn get_type_name(type_idx: usize) -> &'a FString;
+pub struct EntityList {}
+
+impl EntityList {
+    fn get_entity_encoding(&self) -> EntityEncoding {
+        todo!();
+    }
+    
+    fn get_entity_tag(&self) -> &Tag {
+        todo!();
+    }
+
+    fn add_new_type(&mut self, name: FString) -> usize {
+        todo!();
+    }
+
+    fn add_or_get_type(&mut self, name: FString) -> usize {
+        todo!();
+    }
+
+    fn get_type_name(&self, type_idx: usize) -> &FString {
+        todo!();
+    }
 }
 
 pub struct Entity {
@@ -26,14 +43,9 @@ pub struct Entity {
     enc_size: usize
 }
 
-pub struct EntityOpt {
-    //pub origin: EntityOrigin,
-    pub type_idx: usize
-}
-
 impl Decoder for Entity {
-    type Opt = EntityOpt;
-    fn decode(raw: &Raw, offset: usize, _: usize, opt: Option<Self::Opt>) -> Result<Self> {
+    type Opt<'o> = &'o EntityList;
+    fn decode<'o>(raw: &Raw, offset: usize, _: usize, opt: Option<Self::Opt<'o>>) -> Result<Self> {
         let rd = ReadStream::new(raw, offset);
         let opt = match opt {
             Some(opt) => opt,

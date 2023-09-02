@@ -3,14 +3,14 @@ use anyhow::Result;
 use std::str;
 
 pub trait Decoder: Sized {
-    type Opt;
-    fn decode(raw: &Raw, offset: usize, size: usize, opt: Option<Self::Opt>) -> Result<Self>;
+    type Opt<'o>;
+    fn decode(raw: &Raw, offset: usize, size: usize, opt: Option<Self::Opt<'_>>) -> Result<Self>;
     fn encode(&self) -> Result<Raw>;
     fn get_enc_size(&self) -> usize;
 }
 
 impl Decoder for String {
-    type Opt = ();
+    type Opt<'o> = ();
     fn decode(raw: &Raw, offset: usize, size: usize, _: Option<()>) -> Result<Self> {
         let str = &raw.mem[offset..];
         match str.iter().position(|&c| c == 0) {
