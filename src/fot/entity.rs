@@ -1,7 +1,7 @@
 use super::raw::Raw;
 use super::tag::Tag;
 use super::esh::ESH;
-use super::decoder::Decoder;
+use super::decoder::DecoderOpt;
 use super::fstring::FString;
 use super::stream::{ReadStream, WriteStream};
 use anyhow::anyhow;
@@ -43,7 +43,7 @@ pub struct Entity {
     enc_size: usize
 }
 
-impl Decoder for Entity {
+impl DecoderOpt for Entity {
     type Opt<'o> = &'o EntityList;
     fn decode<'o>(raw: &Raw, offset: usize, _: usize, opt: Option<Self::Opt<'o>>) -> Result<Self> {
         let rd = ReadStream::new(raw, offset);
