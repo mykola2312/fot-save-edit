@@ -1,4 +1,4 @@
-use super::decoder::DecoderOpt;
+use super::decoder::DecoderCtx;
 use super::entity::Entity;
 use super::esh::ESH;
 use super::fstring::FString;

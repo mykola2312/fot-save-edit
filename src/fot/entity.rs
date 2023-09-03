@@ -1,4 +1,4 @@
-use super::decoder::DecoderOpt;
+use super::decoder::DecoderCtx;
 use super::entitylist::{EntityEncoding, EntityList};
 use super::esh::ESH;
 use super::raw::Raw;
@@ -14,13 +14,13 @@ pub struct Entity {
     enc_size: usize,
 }
 
-impl DecoderOpt<&mut EntityList> for Entity {
-    fn decode(raw: &Raw, offset: usize, _: usize, opt: &mut EntityList) -> Result<Self> {
+impl DecoderCtx<&mut EntityList> for Entity {
+    fn decode(raw: &Raw, offset: usize, _: usize, ctx: &mut EntityList) -> Result<Self> {
         let mut rd = ReadStream::new(raw, offset);
-        Ok(match opt.get_entity_encoding() {
+        Ok(match ctx.get_entity_encoding() {
             EntityEncoding::File => {
                 let flags = NO_FLAGS;
-                let type_idx = opt.add_or_get_type(rd.read(0)?);
+                let type_idx = ctx.add_or_get_type(rd.read(0)?);
                 let esh: ESH = rd.read(0)?;
                 let enc_size = rd.offset() - offset;
                 Entity { flags, type_idx, esh, enc_size }
@@ -35,12 +35,12 @@ impl DecoderOpt<&mut EntityList> for Entity {
         })
     }
 
-    fn encode(&self, opt: &mut EntityList) -> Result<Raw> {
+    fn encode(&self, ctx: &mut EntityList) -> Result<Raw> {
         let mut wd = WriteStream::new(self.get_enc_size());
-        match opt.get_entity_encoding() {
+        match ctx.get_entity_encoding() {
             EntityEncoding::File => {
-                wd.write(opt.get_entity_tag())?;
-                wd.write(opt.get_type_name(self.type_idx))?;
+                wd.write(ctx.get_entity_tag())?;
+                wd.write(ctx.get_type_name(self.type_idx))?;
                 wd.write(&self.esh)?;
             },
             EntityEncoding::World => {
