@@ -1,4 +1,4 @@
-use super::decoder::{Decoder, DecoderOpt};
+use super::decoder::{Decoder, DecoderCtx};
 use super::raw::Raw;
 use anyhow::anyhow;
 use anyhow::Result;
@@ -46,8 +46,8 @@ impl<'a> ReadStream<'a> {
 
     // read_opt - decode with optional paramters. required for complex structure
     // with different origins (save / entfile) like entities
-    pub fn read_opt<T: DecoderOpt<Opt>, Opt>(&mut self, size: usize, opt: Opt) -> Result<T> {
-        let val = T::decode(&self.raw, self.offset(), size, opt)?;
+    pub fn read_opt<T: DecoderCtx<Ctx>, Ctx>(&mut self, size: usize, ctx: Ctx) -> Result<T> {
+        let val = T::decode(&self.raw, self.offset(), size, ctx)?;
         self.skip(val.get_enc_size());
         Ok(val)
     }
