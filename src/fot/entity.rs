@@ -23,14 +23,24 @@ impl DecoderCtx<&mut EntityList> for Entity {
                 let type_idx = ctx.add_or_get_type(rd.read(0)?);
                 let esh: ESH = rd.read(0)?;
                 let enc_size = rd.offset() - offset;
-                Entity { flags, type_idx, esh, enc_size }
-            },
+                Entity {
+                    flags,
+                    type_idx,
+                    esh,
+                    enc_size,
+                }
+            }
             EntityEncoding::World => {
                 let flags = rd.read_u32()?;
                 let type_idx = rd.read_u16()? as usize;
                 let esh: ESH = rd.read(0)?;
                 let enc_size = rd.offset() - offset;
-                Entity { flags, type_idx, esh, enc_size }
+                Entity {
+                    flags,
+                    type_idx,
+                    esh,
+                    enc_size,
+                }
             }
         })
     }
@@ -42,7 +52,7 @@ impl DecoderCtx<&mut EntityList> for Entity {
                 wd.write(ctx.get_entity_tag())?;
                 wd.write(ctx.get_type_name(self.type_idx))?;
                 wd.write(&self.esh)?;
-            },
+            }
             EntityEncoding::World => {
                 wd.write_u32(self.flags)?;
                 wd.write_u16(self.type_idx as u16)?;
