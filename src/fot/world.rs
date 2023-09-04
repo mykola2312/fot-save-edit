@@ -1,6 +1,6 @@
 use super::decoder::{Decoder, DecoderCtx};
+use super::entitylist::{EntityEncoding, EntityList};
 use super::fstring::FString;
-use super::entitylist::{EntityList, EntityEncoding};
 use super::raw::Raw;
 use super::sgd::SGD;
 use super::ssg::SSG;
@@ -25,7 +25,7 @@ pub struct World {
     pub sgd: SGD,
     pub ssg: SSG,
 
-    pub ents: EntityList
+    pub ents: EntityList,
 }
 
 impl World {
@@ -37,7 +37,7 @@ impl World {
         let raw1 = Raw {
             offset: 0,
             size: self.ents.get_enc_size(),
-            mem: self.data.mem[entfile_start..entfile_start+self.ents.get_enc_size()].to_vec()
+            mem: self.data.mem[entfile_start..entfile_start + self.ents.get_enc_size()].to_vec(),
         };
         raw1.dump(Path::new("entfile1.bin"))?;
 
@@ -79,7 +79,7 @@ impl Decoder for World {
             mission,
             sgd,
             ssg,
-            ents
+            ents,
         })
     }
 
