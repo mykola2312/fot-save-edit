@@ -33,13 +33,11 @@ impl World {
     const WORLD_HDR_LEN: usize = 0x13;
 
     pub fn test(&mut self) -> Result<()> {
-        /*self.entlist.convert(EntityEncoding::File);
-        self.entlist
-            .encode(EntityEncoding::File)?
-            .dump(Path::new("D:\\entlist.ent"))?;*/
-        for (id, ent) in &self.entlist {
-            println!("{} {}", id, ent.type_idx);
-        }
+        let actor_type = self.entlist.get_type_idx("Actor").unwrap();
+        println!("Actor type {}", actor_type);
+        //for (id, ent) in &self.entlist {
+        //    println!("{} {}", id, ent.type_idx);
+        //}
 
         Ok(())
     }
