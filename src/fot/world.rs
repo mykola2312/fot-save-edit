@@ -1,4 +1,4 @@
-use super::decoder::Decoder;
+use super::decoder::{Decoder, DecoderCtx};
 use super::fstring::FString;
 use super::entitylist::{EntityList, EntityEncoding};
 use super::raw::Raw;
@@ -12,6 +12,8 @@ use byteorder::{LittleEndian, WriteBytesExt};
 use deflate::deflate_bytes_zlib;
 use inflate::inflate_bytes_zlib;
 use std::io::Cursor;
+
+use std::path::Path;
 
 pub struct World {
     pub tag: Tag,
@@ -31,25 +33,16 @@ impl World {
     const WORLD_HDR_LEN: usize = 0x13;
 
     pub fn test(&self) -> Result<()> {
-        for i in 0..self.ents.entities.len() {
-            let ent = &self.ents.entities[i];
-            let idx = i+1;
+        let entfile_start: usize = 0x1038;
+        let raw1 = Raw {
+            offset: 0,
+            size: self.ents.get_enc_size(),
+            mem: self.data.mem[entfile_start..entfile_start+self.ents.get_enc_size()].to_vec()
+        };
+        raw1.dump(Path::new("entfile1.bin"))?;
 
-            let type_name = match ent.type_idx {
-                0xFFFF => "<NO ESH>",
-                _ => self.ents.get_type_name(ent.type_idx).str.as_str()
-            };
-            println!("idx {} type {}", idx, type_name);
-            
-            match ent.esh.as_ref() {
-                Some(esh) => {
-                    for (name, value) in esh.props.iter() {
-                        println!("\t{} {}", &name, &value);
-                    }
-                },
-                None => continue
-            }
-        }
+        let raw2 = self.ents.encode(EntityEncoding::World)?;
+        raw2.dump(Path::new("entfile2.bin"))?;
 
         Ok(())
     }

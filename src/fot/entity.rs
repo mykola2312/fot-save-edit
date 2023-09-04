@@ -60,7 +60,10 @@ impl DecoderCtx<&mut EntityList, &EntityList> for Entity {
             EntityEncoding::World => {
                 wd.write_u32(self.flags)?;
                 wd.write_u16(self.type_idx as u16)?;
-                wd.write(self.esh.as_ref().unwrap())?;
+                match self.esh.as_ref() {
+                    Some(esh) => wd.write(esh)?,
+                    None => ()
+                }
             }
         }
         Ok(wd.into_raw(0, 0))
