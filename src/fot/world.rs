@@ -1,6 +1,6 @@
 use super::decoder::Decoder;
-use super::esh::ESH;
 use super::fstring::FString;
+use super::entitylist::{EntityList, EntityEncoding};
 use super::raw::Raw;
 use super::sgd::SGD;
 use super::ssg::SSG;
@@ -13,7 +13,6 @@ use deflate::deflate_bytes_zlib;
 use inflate::inflate_bytes_zlib;
 use std::io::Cursor;
 
-#[derive(Debug)]
 pub struct World {
     pub tag: Tag,
     pub uncompressed_size: u32,
@@ -23,6 +22,8 @@ pub struct World {
     pub mission: FString,
     pub sgd: SGD,
     pub ssg: SSG,
+
+    pub ents: EntityList
 }
 
 impl World {
@@ -30,37 +31,7 @@ impl World {
     const WORLD_HDR_LEN: usize = 0x13;
 
     pub fn test(&self) -> Result<()> {
-        let mut rd = ReadStream::new(&self.data, 0x1038);
-        let _: Tag = rd.read(0)?;
-
-        let n = rd.read_u32()? as usize;
-        let mut types: Vec<FString> = Vec::with_capacity(n);
-        for i in 0..n {
-            let ent_type: FString = rd.read(0)?;
-            println!("{}\t{}", i, &ent_type);
-            types.push(ent_type);
-        }
-
-        let esh_count = rd.read_u16()?;
-        let unk1 = rd.read_u32()?;
-        dbg!(esh_count);
-        for i in 1..esh_count {
-            let unk2 = rd.read_u32()?;
-            let type_idx = rd.read_u16()?;
-            if type_idx == 0xFFFF {
-                continue;
-            }
-
-            let name = &types[type_idx as usize];
-            println!(
-                "offset {:x} idx {} unk1 {} name {}",
-                rd.offset(),
-                i,
-                unk2,
-                name
-            );
-            let _: ESH = rd.read(0)?;
-        }
+        println!("read {} ents", self.ents.entities.len());
 
         Ok(())
     }
@@ -88,6 +59,8 @@ impl Decoder for World {
         let sgd: SGD = rd.read(0)?;
         let ssg: SSG = rd.read(0)?;
 
+        let ents: EntityList = rd.read_opt(0, EntityEncoding::World)?;
+
         Ok(World {
             tag,
             uncompressed_size,
@@ -95,6 +68,7 @@ impl Decoder for World {
             mission,
             sgd,
             ssg,
+            ents
         })
     }
 

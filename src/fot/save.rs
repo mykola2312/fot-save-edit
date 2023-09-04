@@ -7,7 +7,6 @@ use byteorder::{ByteOrder, LittleEndian};
 use std::path::Path;
 use std::str;
 
-#[derive(Debug)]
 pub struct Save {
     pub raw: Raw,
     pub world: World,
