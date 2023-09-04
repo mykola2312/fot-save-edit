@@ -18,6 +18,7 @@ pub struct EntityList {
     encoding: EntityEncoding,
     entity_file_tag: Option<Tag>,
     entity_tag: Option<Tag>,
+    unk1: u32,
     enc_size: usize,
 
     types: Vec<FString>,
@@ -57,6 +58,7 @@ impl DecoderCtx<EntityEncoding> for EntityList {
             encoding: ctx,
             entity_file_tag: None,
             entity_tag: None,
+            unk1: 0,
             enc_size: 0,
             types: Vec::new(),
             entities: Vec::new()
@@ -81,7 +83,18 @@ impl DecoderCtx<EntityEncoding> for EntityList {
             },
 
             EntityEncoding::World => {
+                ent_list.entity_file_tag = Some(rd.read(0)?);
+                let n = rd.read_u32()?;
+                for _ in 0..n {
+                    ent_list.types.push(rd.read(0)?);
+                }
 
+                let m = rd.read_u16()?;
+                ent_list.unk1 = rd.read_u32()?;
+                for _ in 0..m {
+                    let ent: Entity = rd.read_opt(0, &mut ent_list)?;
+                    ent_list.entities.push(ent);
+                }
 
                 ent_list.enc_size = rd.offset() - offset;
                 ent_list
