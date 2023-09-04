@@ -118,7 +118,7 @@ impl DecoderCtx<EntityEncoding,EntityEncoding> for EntityList {
                     wd.write(type_name)?;
                 }
 
-                wd.write_u16(self.entities.len() as u16)?;
+                wd.write_u16((self.entities.len() + 1) as u16)?;
                 wd.write_u32(self.unk1)?;
                 for ent in self.entities.iter() {
                     wd.write_opt(ent, &self)?;
