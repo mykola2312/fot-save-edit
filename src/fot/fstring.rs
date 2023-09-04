@@ -89,6 +89,12 @@ impl PartialEq for FString {
     }
 }
 
+impl std::cmp::PartialEq<str> for FString {
+    fn eq(&self, other: &str) -> bool {
+        self.str == other
+    }
+}
+
 impl Hash for FString {
     fn hash<H: Hasher>(&self, state: &mut H) {
         self.str.hash(state);

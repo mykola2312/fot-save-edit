@@ -44,6 +44,10 @@ impl EntityList {
         self.types.len() - 1
     }
 
+    pub fn get_type_idx(&self, type_name: &str) -> Option<usize> {
+        self.types.iter().position(|f| f.eq(type_name))
+    }
+
     pub fn add_or_get_type(&mut self, type_name: FString) -> usize {
         match self.types.iter().position(|f| f.eq(&type_name)) {
             Some(idx) => idx,
