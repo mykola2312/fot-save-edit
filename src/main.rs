@@ -13,7 +13,7 @@ fn main() {
         None => "out.bin"
     };*/
 
-    let save = Save::load(Path::new(save_path)).expect("load save");
+    let mut save = Save::load(Path::new(save_path)).expect("load save");
     save.world.test().expect("test");
     //save.save(Path::new("out.sav")).expect("failed to save");
 }
