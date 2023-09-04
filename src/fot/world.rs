@@ -31,7 +31,25 @@ impl World {
     const WORLD_HDR_LEN: usize = 0x13;
 
     pub fn test(&self) -> Result<()> {
-        println!("read {} ents", self.ents.entities.len());
+        for i in 0..self.ents.entities.len() {
+            let ent = &self.ents.entities[i];
+            let idx = i+1;
+
+            let type_name = match ent.type_idx {
+                0xFFFF => "<NO ESH>",
+                _ => self.ents.get_type_name(ent.type_idx).str.as_str()
+            };
+            println!("idx {} type {}", idx, type_name);
+            
+            match ent.esh.as_ref() {
+                Some(esh) => {
+                    for (name, value) in esh.props.iter() {
+                        println!("\t{} {}", &name, &value);
+                    }
+                },
+                None => continue
+            }
+        }
 
         Ok(())
     }

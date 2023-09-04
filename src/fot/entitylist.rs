@@ -91,9 +91,8 @@ impl DecoderCtx<EntityEncoding,EntityEncoding> for EntityList {
 
                 let ent_count = rd.read_u16()?;
                 ent_list.unk1 = rd.read_u32()?;
-                for i in 1..ent_count {
+                for _ in 1..ent_count {
                     let ent: Entity = rd.read_opt(0, &mut ent_list)?;
-                    println!("ok read {}", i);
                     ent_list.entities.push(ent);
                 }
 
@@ -131,6 +130,6 @@ impl DecoderCtx<EntityEncoding,EntityEncoding> for EntityList {
     }
 
     fn get_enc_size(&self) -> usize {
-        todo!();
+        self.enc_size
     }
 }

@@ -10,7 +10,7 @@ const NO_FLAGS: u32 = 0;
 pub struct Entity {
     pub flags: u32,
     pub type_idx: usize,
-    pub esh: ESH,
+    pub esh: Option<ESH>,
     enc_size: usize,
 }
 
@@ -26,14 +26,19 @@ impl DecoderCtx<&mut EntityList, &EntityList> for Entity {
                 Entity {
                     flags,
                     type_idx,
-                    esh,
+                    esh: Some(esh),
                     enc_size,
                 }
             }
             EntityEncoding::World => {
                 let flags = rd.read_u32()?;
                 let type_idx = rd.read_u16()? as usize;
-                let esh: ESH = rd.read(0)?;
+                let esh: Option<ESH> = if type_idx != 0xFFFF {
+                    Some(rd.read(0)?)
+                } else {
+                    None
+                };
+
                 let enc_size = rd.offset() - offset;
                 Entity {
                     flags,
@@ -50,12 +55,12 @@ impl DecoderCtx<&mut EntityList, &EntityList> for Entity {
         match ctx.get_entity_encoding() {
             EntityEncoding::File => {
                 wd.write(ctx.get_type_name(self.type_idx))?;
-                wd.write(&self.esh)?;
+                wd.write(self.esh.as_ref().unwrap())?;
             }
             EntityEncoding::World => {
                 wd.write_u32(self.flags)?;
                 wd.write_u16(self.type_idx as u16)?;
-                wd.write(&self.esh)?;
+                wd.write(self.esh.as_ref().unwrap())?;
             }
         }
         Ok(wd.into_raw(0, 0))
