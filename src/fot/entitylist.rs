@@ -159,3 +159,12 @@ impl DecoderCtx<EntityEncoding, EntityEncoding> for EntityList {
         self.enc_size
     }
 }
+
+impl<'a> IntoIterator for &'a EntityList {
+    type Item = &'a Entity;
+    type IntoIter = std::slice::Iter<'a, Entity>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.ents.iter()
+    }
+}
