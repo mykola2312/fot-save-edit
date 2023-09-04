@@ -14,7 +14,7 @@ pub struct Entity {
     enc_size: usize,
 }
 
-impl DecoderCtx<&mut EntityList> for Entity {
+impl DecoderCtx<&mut EntityList, &EntityList> for Entity {
     fn decode(raw: &Raw, offset: usize, _: usize, ctx: &mut EntityList) -> Result<Self> {
         let mut rd = ReadStream::new(raw, offset);
         Ok(match ctx.get_entity_encoding() {
@@ -45,11 +45,10 @@ impl DecoderCtx<&mut EntityList> for Entity {
         })
     }
 
-    fn encode(&self, ctx: &mut EntityList) -> Result<Raw> {
+    fn encode(&self, ctx: &EntityList) -> Result<Raw> {
         let mut wd = WriteStream::new(self.get_enc_size());
         match ctx.get_entity_encoding() {
             EntityEncoding::File => {
-                wd.write(ctx.get_entity_tag())?;
                 wd.write(ctx.get_type_name(self.type_idx))?;
                 wd.write(&self.esh)?;
             }

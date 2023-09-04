@@ -21,8 +21,8 @@ pub struct EntityList {
     unk1: u32,
     enc_size: usize,
 
-    types: Vec<FString>,
-    entities: Vec<Entity>
+    pub types: Vec<FString>,
+    pub entities: Vec<Entity>
 }
 
 impl EntityList {
@@ -51,7 +51,7 @@ impl EntityList {
     }
 }
 
-impl DecoderCtx<EntityEncoding> for EntityList {
+impl DecoderCtx<EntityEncoding,EntityEncoding> for EntityList {
     fn decode(raw: &Raw, offset: usize, size: usize, ctx: EntityEncoding) -> Result<Self> {
         let mut rd = ReadStream::new(raw, offset);
         let mut ent_list = EntityList {
@@ -84,15 +84,16 @@ impl DecoderCtx<EntityEncoding> for EntityList {
 
             EntityEncoding::World => {
                 ent_list.entity_file_tag = Some(rd.read(0)?);
-                let n = rd.read_u32()?;
-                for _ in 0..n {
+                let type_count = rd.read_u32()?;
+                for _ in 0..type_count {
                     ent_list.types.push(rd.read(0)?);
                 }
 
-                let m = rd.read_u16()?;
+                let ent_count = rd.read_u16()?;
                 ent_list.unk1 = rd.read_u32()?;
-                for _ in 0..m {
+                for i in 1..ent_count {
                     let ent: Entity = rd.read_opt(0, &mut ent_list)?;
+                    println!("ok read {}", i);
                     ent_list.entities.push(ent);
                 }
 
@@ -103,7 +104,30 @@ impl DecoderCtx<EntityEncoding> for EntityList {
     }
 
     fn encode(&self, ctx: EntityEncoding) -> Result<Raw> {
-        todo!();
+        let mut wd = WriteStream::new(self.get_enc_size());
+        match ctx {
+            EntityEncoding::File => {
+                for ent in self.entities.iter() {
+                    wd.write(self.get_entity_tag())?;
+                    wd.write_opt(ent, &self)?;
+                }
+            },
+            EntityEncoding::World => {
+                wd.write(self.entity_file_tag.as_ref().unwrap())?;
+                wd.write_u32(self.types.len() as u32)?;
+                for type_name in self.types.iter() {
+                    wd.write(type_name)?;
+                }
+
+                wd.write_u16(self.entities.len() as u16)?;
+                wd.write_u32(self.unk1)?;
+                for ent in self.entities.iter() {
+                    wd.write_opt(ent, &self)?;
+                }
+            }
+        }
+
+        Ok(wd.into_raw(0, 0))
     }
 
     fn get_enc_size(&self) -> usize {

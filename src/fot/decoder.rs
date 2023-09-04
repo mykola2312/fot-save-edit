@@ -8,9 +8,9 @@ pub trait Decoder: Sized {
     fn get_enc_size(&self) -> usize;
 }
 
-pub trait DecoderCtx<Ctx>: Sized {
-    fn decode(raw: &Raw, offset: usize, size: usize, ctx: Ctx) -> Result<Self>;
-    fn encode(&self, ctx: Ctx) -> Result<Raw>;
+pub trait DecoderCtx<DCtx, ECtx>: Sized {
+    fn decode(raw: &Raw, offset: usize, size: usize, ctx: DCtx) -> Result<Self>;
+    fn encode(&self, ctx: ECtx) -> Result<Raw>;
     fn get_enc_size(&self) -> usize;
 }
 
