@@ -28,3 +28,18 @@ impl Decoder for Tag {
         self.name.get_enc_size() + self.version.get_enc_size()
     }
 }
+
+// struct for Tag consts
+pub struct CTag<'a> {
+    pub name: &'a str,
+    pub version: &'a str,
+}
+
+impl<'a> CTag<'a> {
+    pub fn to_tag(&self) -> Tag {
+        Tag {
+            name: self.name.to_string(),
+            version: self.version.to_string(),
+        }
+    }
+}

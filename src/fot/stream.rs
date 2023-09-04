@@ -46,7 +46,11 @@ impl<'a> ReadStream<'a> {
 
     // read_opt - decode with optional paramters. required for complex structure
     // with different origins (save / entfile) like entities
-    pub fn read_opt<T: DecoderCtx<DCtx, ECtx>, DCtx, ECtx>(&mut self, size: usize, ctx: DCtx) -> Result<T> {
+    pub fn read_opt<T: DecoderCtx<DCtx, ECtx>, DCtx, ECtx>(
+        &mut self,
+        size: usize,
+        ctx: DCtx,
+    ) -> Result<T> {
         let val = T::decode(&self.raw, self.offset(), size, ctx)?;
         self.skip(val.get_enc_size());
         Ok(val)
@@ -112,7 +116,11 @@ impl WriteStream {
         self.buf.get_mut().extend(bytes.iter());
     }
 
-    pub fn write_opt<T: DecoderCtx<DCtx, ECtx>, DCtx, ECtx>(&mut self, val: &T, ctx: ECtx) -> Result<()> {
+    pub fn write_opt<T: DecoderCtx<DCtx, ECtx>, DCtx, ECtx>(
+        &mut self,
+        val: &T,
+        ctx: ECtx,
+    ) -> Result<()> {
         let mut raw = val.encode(ctx)?;
         self.skip(raw.mem.len());
         self.buf.get_mut().append(&mut raw.mem);

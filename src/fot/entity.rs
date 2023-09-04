@@ -62,7 +62,7 @@ impl DecoderCtx<&mut EntityList, &EntityList> for Entity {
                 wd.write_u16(self.type_idx as u16)?;
                 match self.esh.as_ref() {
                     Some(esh) => wd.write(esh)?,
-                    None => ()
+                    None => (),
                 }
             }
         }

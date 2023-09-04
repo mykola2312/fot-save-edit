@@ -4,15 +4,20 @@ use super::esh::ESH;
 use super::fstring::FString;
 use super::raw::Raw;
 use super::stream::{ReadStream, WriteStream};
-use super::tag::Tag;
+use super::tag::{CTag, Tag};
 use anyhow::anyhow;
 use anyhow::Result;
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, PartialEq)]
 pub enum EntityEncoding {
     File,
     World,
 }
+
+const DEFAULT_ENTITY_TAG: CTag<'static> = CTag {
+    name: "<entity>",
+    version: "2",
+};
 
 pub struct EntityList {
     encoding: EntityEncoding,
@@ -22,7 +27,7 @@ pub struct EntityList {
     enc_size: usize,
 
     pub types: Vec<FString>,
-    pub entities: Vec<Entity>
+    pub entities: Vec<Entity>,
 }
 
 impl EntityList {
@@ -42,16 +47,23 @@ impl EntityList {
     pub fn add_or_get_type(&mut self, type_name: FString) -> usize {
         match self.types.iter().position(|f| f.eq(&type_name)) {
             Some(idx) => idx,
-            None => self.add_new_type(type_name)
+            None => self.add_new_type(type_name),
         }
     }
 
     pub fn get_type_name(&self, type_idx: usize) -> &FString {
         &self.types[type_idx]
     }
+
+    pub fn convert(&mut self, new: EntityEncoding) {
+        use EntityEncoding as EE;
+        if self.encoding == EE::World && new == EE::File {
+            self.entity_tag = Some(DEFAULT_ENTITY_TAG.to_tag());
+        }
+    }
 }
 
-impl DecoderCtx<EntityEncoding,EntityEncoding> for EntityList {
+impl DecoderCtx<EntityEncoding, EntityEncoding> for EntityList {
     fn decode(raw: &Raw, offset: usize, size: usize, ctx: EntityEncoding) -> Result<Self> {
         let mut rd = ReadStream::new(raw, offset);
         let mut ent_list = EntityList {
@@ -61,7 +73,7 @@ impl DecoderCtx<EntityEncoding,EntityEncoding> for EntityList {
             unk1: 0,
             enc_size: 0,
             types: Vec::new(),
-            entities: Vec::new()
+            entities: Vec::new(),
         };
 
         Ok(match ctx {
@@ -77,10 +89,10 @@ impl DecoderCtx<EntityEncoding,EntityEncoding> for EntityList {
                     let ent: Entity = rd.read_opt(0, &mut ent_list)?;
                     ent_list.entities.push(ent);
                 }
-                
+
                 ent_list.enc_size = rd.offset() - offset;
                 ent_list
-            },
+            }
 
             EntityEncoding::World => {
                 ent_list.entity_file_tag = Some(rd.read(0)?);
@@ -110,7 +122,7 @@ impl DecoderCtx<EntityEncoding,EntityEncoding> for EntityList {
                     wd.write(self.get_entity_tag())?;
                     wd.write_opt(ent, &self)?;
                 }
-            },
+            }
             EntityEncoding::World => {
                 wd.write(self.entity_file_tag.as_ref().unwrap())?;
                 wd.write_u32(self.types.len() as u32)?;
