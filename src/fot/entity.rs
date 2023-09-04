@@ -5,7 +5,8 @@ use super::raw::Raw;
 use super::stream::{ReadStream, WriteStream};
 use anyhow::Result;
 
-const NO_FLAGS: u32 = 0;
+pub const NO_FLAGS: u32 = 0;
+pub const NO_ESH: usize = 0xFFFF;
 
 pub struct Entity {
     pub flags: u32,
@@ -33,7 +34,7 @@ impl DecoderCtx<&mut EntityList, &EntityList> for Entity {
             EntityEncoding::World => {
                 let flags = rd.read_u32()?;
                 let type_idx = rd.read_u16()? as usize;
-                let esh: Option<ESH> = if type_idx != 0xFFFF {
+                let esh: Option<ESH> = if type_idx != NO_ESH {
                     Some(rd.read(0)?)
                 } else {
                     None

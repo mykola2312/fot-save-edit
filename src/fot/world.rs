@@ -33,10 +33,10 @@ impl World {
     const WORLD_HDR_LEN: usize = 0x13;
 
     pub fn test(&mut self) -> Result<()> {
-        self.entlist.convert(EntityEncoding::File);
+        /*self.entlist.convert(EntityEncoding::File);
         self.entlist
             .encode(EntityEncoding::File)?
-            .dump(Path::new("entlist.ent"))?;
+            .dump(Path::new("D:\\entlist.ent"))?;*/
 
         Ok(())
     }

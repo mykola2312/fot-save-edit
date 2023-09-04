@@ -1,12 +1,12 @@
-use super::decoder::DecoderCtx;
+use super::decoder::{DecoderCtx, Decoder};
 use super::entity::Entity;
-use super::esh::ESH;
-use super::fstring::FString;
+use super::fstring::{FString, FStringEncoding};
 use super::raw::Raw;
 use super::stream::{ReadStream, WriteStream};
-use super::tag::{CTag, Tag};
-use anyhow::anyhow;
+use super::tag::{Tag, CTag};
+use std::path::Path;
 use anyhow::Result;
+use anyhow::anyhow;
 
 #[derive(Clone, Copy, PartialEq)]
 pub enum EntityEncoding {
@@ -17,10 +17,6 @@ pub enum EntityEncoding {
 const DEFAULT_ENTITY_TAG: CTag<'static> = CTag {
     name: "<entity>",
     version: "2",
-};
-const DEFAULT_ENTITYFILE_TAG: CTag<'static> = CTag {
-    name: "<entity_file>",
-    version: "3",
 };
 
 pub struct EntityList {
@@ -59,13 +55,22 @@ impl EntityList {
         &self.types[type_idx]
     }
 
-    pub fn convert(&mut self, new: EntityEncoding) {
-        use EntityEncoding as EE;
-        if self.encoding == EE::World && new == EE::File {
-            self.entity_tag = Some(DEFAULT_ENTITY_TAG.to_tag());
-        } else if self.encoding == EE::File && new == EE::World {
-            self.entity_file_tag = Some(DEFAULT_ENTITYFILE_TAG.to_tag());
-        }
+    pub fn dump_to_entfile(&self, ent: &Entity, path: &Path) -> Result<()> {
+        let esh = match &ent.esh {
+            Some(esh) => esh,
+            None => return Err(anyhow!("entity has no esh"))
+        };
+
+        let tag = DEFAULT_ENTITY_TAG.to_tag();
+        let mut type_name = self.get_type_name(ent.type_idx).clone();
+        type_name.encoding = FStringEncoding::ANSI;
+
+        let mut wd = WriteStream::new(tag.get_enc_size() + ent.get_enc_size());
+        wd.write(&tag)?;
+        wd.write(esh)?;
+
+        wd.into_raw(0, 0).dump(path)?;
+        Ok(())
     }
 }
 
@@ -87,7 +92,7 @@ impl DecoderCtx<EntityEncoding, EntityEncoding> for EntityList {
                 let mut first = true;
                 while rd.offset() < size {
                     let tag: Tag = rd.read(0)?;
-                    if (first) {
+                    if first {
                         ent_list.entity_tag = Some(tag);
                         first = false;
                     }
@@ -125,6 +130,9 @@ impl DecoderCtx<EntityEncoding, EntityEncoding> for EntityList {
         match ctx {
             EntityEncoding::File => {
                 for ent in self.ents.iter() {
+                    if ent.esh.is_none() {
+                        continue;
+                    }
                     wd.write(self.get_entity_tag())?;
                     wd.write_opt(ent, &self)?;
                 }
