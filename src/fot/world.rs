@@ -25,24 +25,18 @@ pub struct World {
     pub sgd: SGD,
     pub ssg: SSG,
 
-    pub ents: EntityList,
+    pub entlist: EntityList,
 }
 
 impl World {
     const WORLD_TAG_LEN: usize = 11;
     const WORLD_HDR_LEN: usize = 0x13;
 
-    pub fn test(&self) -> Result<()> {
-        let entfile_start: usize = 0x1038;
-        let raw1 = Raw {
-            offset: 0,
-            size: self.ents.get_enc_size(),
-            mem: self.data.mem[entfile_start..entfile_start + self.ents.get_enc_size()].to_vec(),
-        };
-        raw1.dump(Path::new("entfile1.bin"))?;
-
-        let raw2 = self.ents.encode(EntityEncoding::World)?;
-        raw2.dump(Path::new("entfile2.bin"))?;
+    pub fn test(&mut self) -> Result<()> {
+        self.entlist.convert(EntityEncoding::File);
+        self.entlist
+            .encode(EntityEncoding::File)?
+            .dump(Path::new("entlist.ent"))?;
 
         Ok(())
     }
@@ -70,7 +64,7 @@ impl Decoder for World {
         let sgd: SGD = rd.read(0)?;
         let ssg: SSG = rd.read(0)?;
 
-        let ents: EntityList = rd.read_opt(0, EntityEncoding::World)?;
+        let entlist: EntityList = rd.read_opt(0, EntityEncoding::World)?;
 
         Ok(World {
             tag,
@@ -79,7 +73,7 @@ impl Decoder for World {
             mission,
             sgd,
             ssg,
-            ents,
+            entlist,
         })
     }
 
