@@ -37,8 +37,8 @@ impl World {
         self.entlist
             .encode(EntityEncoding::File)?
             .dump(Path::new("D:\\entlist.ent"))?;*/
-        for ent in &self.entlist {
-            println!("{}", ent.type_idx);
+        for (id, ent) in &self.entlist {
+            println!("{} {}", id, ent.type_idx);
         }
 
         Ok(())

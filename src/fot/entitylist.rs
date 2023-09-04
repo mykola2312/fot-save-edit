@@ -26,8 +26,8 @@ pub struct EntityList {
     unk1: u32,
     enc_size: usize,
 
-    pub types: Vec<FString>,
-    pub ents: Vec<Entity>,
+    types: Vec<FString>,
+    ents: Vec<Entity>,
 }
 
 impl EntityList {
@@ -161,10 +161,10 @@ impl DecoderCtx<EntityEncoding, EntityEncoding> for EntityList {
 }
 
 impl<'a> IntoIterator for &'a EntityList {
-    type Item = &'a Entity;
-    type IntoIter = std::slice::Iter<'a, Entity>;
+    type Item = (usize, &'a Entity);
+    type IntoIter = std::iter::Zip<std::ops::RangeFrom<usize>, std::slice::Iter<'a, Entity>>;
 
     fn into_iter(self) -> Self::IntoIter {
-        self.ents.iter()
+        (1..).zip(&self.ents)
     }
 }
