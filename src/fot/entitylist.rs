@@ -1,7 +1,6 @@
 use super::decoder::{DecoderCtx, Decoder};
 use super::entity::Entity;
 use super::fstring::{FString, FStringEncoding};
-use super::raw::Raw;
 use super::stream::{ReadStream, WriteStream};
 use super::tag::{Tag, CTag};
 use std::path::Path;
@@ -79,8 +78,8 @@ impl EntityList {
 }
 
 impl DecoderCtx<EntityEncoding, EntityEncoding> for EntityList {
-    fn decode(raw: &Raw, offset: usize, size: usize, ctx: EntityEncoding) -> Result<Self> {
-        let mut rd = ReadStream::new(raw, offset);
+    fn decode<'a>(rd: &mut ReadStream<'a>, ctx: EntityEncoding) -> Result<Self> {
+        let offset = rd.offset();
         let mut ent_list = EntityList {
             encoding: ctx,
             entity_file_tag: None,
@@ -94,14 +93,14 @@ impl DecoderCtx<EntityEncoding, EntityEncoding> for EntityList {
         Ok(match ctx {
             EntityEncoding::File => {
                 let mut first = true;
-                while rd.offset() < size {
-                    let tag: Tag = rd.read(0)?;
+                while !rd.is_end() {
+                    let tag: Tag = rd.read()?;
                     if first {
                         ent_list.entity_tag = Some(tag);
                         first = false;
                     }
 
-                    let ent: Entity = rd.read_opt(0, &mut ent_list)?;
+                    let ent: Entity = rd.read_ctx(0, &mut ent_list)?;
                     ent_list.ents.push(ent);
                 }
 
@@ -110,16 +109,16 @@ impl DecoderCtx<EntityEncoding, EntityEncoding> for EntityList {
             }
 
             EntityEncoding::World => {
-                ent_list.entity_file_tag = Some(rd.read(0)?);
+                ent_list.entity_file_tag = Some(rd.read()?);
                 let type_count = rd.read_u32()?;
                 for _ in 0..type_count {
-                    ent_list.types.push(rd.read(0)?);
+                    ent_list.types.push(rd.read()?);
                 }
 
                 let ent_count = rd.read_u16()?;
                 ent_list.unk1 = rd.read_u32()?;
                 for _ in 1..ent_count {
-                    let ent: Entity = rd.read_opt(0, &mut ent_list)?;
+                    let ent: Entity = rd.read_ctx(0, &mut ent_list)?;
                     ent_list.ents.push(ent);
                 }
 
@@ -137,7 +136,7 @@ impl DecoderCtx<EntityEncoding, EntityEncoding> for EntityList {
                         continue;
                     }
                     wd.write(self.get_entity_tag())?;
-                    wd.write_opt(ent, &self)?;
+                    wd.write_ctx(ent, &self)?;
                 }
             }
             EntityEncoding::World => {
@@ -150,7 +149,7 @@ impl DecoderCtx<EntityEncoding, EntityEncoding> for EntityList {
                 wd.write_u16((self.ents.len() + 1) as u16)?;
                 wd.write_u32(self.unk1)?;
                 for ent in self.ents.iter() {
-                    wd.write_opt(ent, &self)?;
+                    wd.write_ctx(ent, &self)?;
                 }
             }
         }

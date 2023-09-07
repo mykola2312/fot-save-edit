@@ -25,7 +25,19 @@ impl<'a> ReadStream<'a> {
         self.rdr.set_position(self.rdr.position() + size as u64);
     }
 
-    pub fn as_bytes(&mut self, size: usize) -> Result<&[u8]> {
+    pub fn size(&self) -> usize {
+        self.raw.mem.len()
+    }
+
+    pub fn is_end(&self) -> bool {
+        self.offset() >= self.size()
+    }
+
+    pub fn as_byte_arr(&self) -> &[u8] {
+        &self.raw.mem[self.offset()..]
+    }
+
+    pub fn as_bytes(&mut self, size: usize) -> Result<&'a [u8]> {
         if self.offset() + size > self.raw.mem.len() {
             dbg!(self.offset(), size, self.raw.mem.len());
             Err(anyhow!("as_bytes/read_bytes size is bigger than buffer"))
@@ -46,20 +58,16 @@ impl<'a> ReadStream<'a> {
 
     // read_opt - decode with optional paramters. required for complex structure
     // with different origins (save / entfile) like entities
-    pub fn read_opt<T: DecoderCtx<DCtx, ECtx>, DCtx, ECtx>(
+    pub fn read_ctx<T: DecoderCtx<DCtx, ECtx>, DCtx, ECtx>(
         &mut self,
         size: usize,
         ctx: DCtx,
     ) -> Result<T> {
-        let val = T::decode(&self.raw, self.offset(), size, ctx)?;
-        self.skip(val.get_enc_size());
-        Ok(val)
+        Ok(T::decode(self, ctx)?)
     }
 
-    pub fn read<T: Decoder>(&mut self, size: usize) -> Result<T> {
-        let val = T::decode(&self.raw, self.offset(), size)?;
-        self.skip(val.get_enc_size());
-        Ok(val)
+    pub fn read<T: Decoder>(&mut self) -> Result<T> {
+        Ok(T::decode(self)?)
     }
 
     pub fn read_u8(&mut self) -> Result<u8> {
@@ -120,7 +128,7 @@ impl WriteStream {
         self.buf.get_mut().reserve(size);
     }
 
-    pub fn write_opt<T: DecoderCtx<DCtx, ECtx>, DCtx, ECtx>(
+    pub fn write_ctx<T: DecoderCtx<DCtx, ECtx>, DCtx, ECtx>(
         &mut self,
         val: &T,
         ctx: ECtx,

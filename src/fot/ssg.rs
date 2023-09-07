@@ -1,5 +1,4 @@
 use super::decoder::Decoder;
-use super::raw::Raw;
 use super::stream::{ReadStream, WriteStream};
 use super::tag::Tag;
 use anyhow::Result;
@@ -11,9 +10,8 @@ pub struct SSG {
 }
 
 impl Decoder for SSG {
-    fn decode(raw: &Raw, offset: usize, _: usize) -> Result<Self> {
-        let mut rd = ReadStream::new(raw, offset);
-        let tag: Tag = rd.read(0)?;
+    fn decode<'a>(rd: &mut ReadStream<'a>) -> Result<Self> {
+        let tag: Tag = rd.read()?;
         let unk1 = rd.read_bytes(0x14)?;
         Ok(SSG { tag, unk1 })
     }

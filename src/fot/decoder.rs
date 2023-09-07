@@ -1,27 +1,29 @@
-use super::raw::Raw;
-use super::stream::WriteStream;
-use anyhow::Result;
+use super::stream::{ReadStream, WriteStream};
+use anyhow::{anyhow, Result};
 use std::str;
 
 pub trait Decoder: Sized {
-    fn decode(raw: &Raw, offset: usize, size: usize) -> Result<Self>;
+    fn decode<'a>(rd: &mut ReadStream<'a>) -> Result<Self>;
     fn encode(&self, wd: &mut WriteStream) -> Result<()>;
     fn get_enc_size(&self) -> usize;
 }
 
 pub trait DecoderCtx<DCtx, ECtx>: Sized {
-    fn decode(raw: &Raw, offset: usize, size: usize, ctx: DCtx) -> Result<Self>;
+    fn decode<'a>(rd: &mut ReadStream<'a>, ctx: DCtx) -> Result<Self>;
     fn encode(&self, wd: &mut WriteStream, ctx: ECtx) -> Result<()>;
     fn get_enc_size(&self) -> usize;
 }
 
 impl Decoder for String {
-    fn decode(raw: &Raw, offset: usize, size: usize) -> Result<Self> {
-        let str = &raw.mem[offset..];
-        match str.iter().position(|&c| c == 0) {
-            Some(pos) => Ok(str::from_utf8(&str[..pos])?.to_string()),
-            None => Ok(str::from_utf8(&raw.mem[offset..offset + size])?.to_string()),
-        }
+    fn decode<'a>(rd: &mut ReadStream<'a>) -> Result<Self> {
+        let bytes = rd.as_byte_arr();
+        let pos = match bytes.iter().position(|&c| c == 0) {
+            Some(pos) => pos,
+            None => return Err(anyhow!("No zero-terminator found"))
+        };
+        let str = str::from_utf8(rd.as_bytes(pos)?)?;
+        rd.skip(1);
+        Ok(str.to_string())
     }
 
     fn encode(&self, wd: &mut WriteStream) -> Result<()> {

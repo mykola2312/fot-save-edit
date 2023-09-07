@@ -1,7 +1,6 @@
 use super::decoder::DecoderCtx;
 use super::entitylist::{EntityEncoding, EntityList};
 use super::esh::ESH;
-use super::raw::Raw;
 use super::stream::{ReadStream, WriteStream};
 use anyhow::Result;
 
@@ -16,13 +15,13 @@ pub struct Entity {
 }
 
 impl DecoderCtx<&mut EntityList, &EntityList> for Entity {
-    fn decode(raw: &Raw, offset: usize, _: usize, ctx: &mut EntityList) -> Result<Self> {
-        let mut rd = ReadStream::new(raw, offset);
+    fn decode<'a>(rd: &mut ReadStream<'a>, ctx: &mut EntityList) -> Result<Self> {
+        let offset = rd.offset();
         Ok(match ctx.get_entity_encoding() {
             EntityEncoding::File => {
                 let flags = NO_FLAGS;
-                let type_idx = ctx.add_or_get_type(rd.read(0)?);
-                let esh: ESH = rd.read(0)?;
+                let type_idx = ctx.add_or_get_type(rd.read()?);
+                let esh: ESH = rd.read()?;
                 let enc_size = rd.offset() - offset;
                 Entity {
                     flags,
@@ -35,7 +34,7 @@ impl DecoderCtx<&mut EntityList, &EntityList> for Entity {
                 let flags = rd.read_u32()?;
                 let type_idx = rd.read_u16()? as usize;
                 let esh: Option<ESH> = if type_idx != NO_ESH {
-                    Some(rd.read(0)?)
+                    Some(rd.read()?)
                 } else {
                     None
                 };

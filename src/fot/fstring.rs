@@ -1,13 +1,10 @@
 use super::decoder::Decoder;
-use super::raw::Raw;
-use super::stream::WriteStream;
+use super::stream::{ReadStream, WriteStream};
 use anyhow::Result;
-use byteorder::{LittleEndian, ReadBytesExt};
 use encoding_rs::WINDOWS_1251;
 use std::borrow::Borrow;
 use std::fmt;
 use std::hash::{Hash, Hasher};
-use std::io::Cursor;
 
 // FString - Fallout
 
@@ -25,14 +22,14 @@ pub struct FString {
 }
 
 impl Decoder for FString {
-    fn decode(raw: &Raw, offset: usize, _: usize) -> Result<Self> {
-        let mut rdr = Cursor::new(&raw.mem[offset..]);
-        let flen = rdr.read_u32::<LittleEndian>()? as usize;
+    fn decode<'a>(rd: &mut ReadStream<'a>) -> Result<Self> {
+        //let mut rdr = Cursor::new(&raw.mem[offset..]);
+        let flen = rd.read_u32()? as usize;
         let len = flen & !(1 << 31);
-        let start = offset + 4;
         if flen & (1 << 31) == 0 {
             // ANSI
-            let (str, _, _) = WINDOWS_1251.decode(&raw.mem[start..start + len]);
+            let bytes = rd.as_bytes(len)?;
+            let (str, _, _) = WINDOWS_1251.decode(bytes);
             Ok(FString {
                 encoding: FStringEncoding::ANSI,
                 enc_len: len,
@@ -40,7 +37,8 @@ impl Decoder for FString {
             })
         } else {
             // WCS2
-            let chars: Vec<u8> = raw.mem[start..start + len * 2]
+            let bytes = rd.as_bytes(len * 2)?;
+            let chars: Vec<u8> = bytes
                 .iter()
                 .step_by(2)
                 .copied()

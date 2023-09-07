@@ -8,10 +8,8 @@ use super::stream::{ReadStream, WriteStream};
 use super::tag::Tag;
 use anyhow::anyhow;
 use anyhow::Result;
-use byteorder::{LittleEndian, WriteBytesExt};
 use deflate::deflate_bytes_zlib;
 use inflate::inflate_bytes_zlib;
-use std::io::Cursor;
 
 use std::path::Path;
 
@@ -48,11 +46,13 @@ impl World {
     }
 }
 
-impl Decoder for World {
-    fn decode(raw: &Raw, offset: usize, size: usize) -> Result<Self> {
-        let mut enc = ReadStream::new(raw, offset);
+pub type WorldOffsetSize = (usize,usize);
+impl DecoderCtx<WorldOffsetSize,()> for World {
+    fn decode<'a>(enc: &mut ReadStream<'a>, ctx: WorldOffsetSize) -> Result<Self> {
+        let offset = ctx.0;
+        let size = ctx.1;
 
-        let tag: Tag = enc.read(Self::WORLD_TAG_LEN)?;
+        let tag: Tag = enc.read()?;
         let uncompressed_size = enc.read_u32()?;
         enc.skip(4);
 
@@ -66,11 +66,11 @@ impl Decoder for World {
         };
         let mut rd = ReadStream::new(&data, 0);
 
-        let mission: FString = rd.read(0)?;
-        let sgd: SGD = rd.read(0)?;
-        let ssg: SSG = rd.read(0)?;
+        let mission: FString = rd.read()?;
+        let sgd: SGD = rd.read()?;
+        let ssg: SSG = rd.read()?;
 
-        let entlist: EntityList = rd.read_opt(0, EntityEncoding::World)?;
+        let entlist: EntityList = rd.read_ctx(0, EntityEncoding::World)?;
 
         let unparsed = rd.read_bytes(data.mem.len() - rd.offset())?;
 
@@ -88,20 +88,20 @@ impl Decoder for World {
         })
     }
 
-    fn encode(&self, wd: &mut WriteStream) -> Result<()> {
+    fn encode(&self, wd: &mut WriteStream, _: ()) -> Result<()> {
         let data = {
             let mut wd = WriteStream::new(self.uncompressed_size as usize);
             
             wd.write(&self.mission)?;
             wd.write(&self.sgd)?;
             wd.write(&self.ssg)?;
-            wd.write_opt(&self.entlist, EntityEncoding::World)?;
+            wd.write_ctx(&self.entlist, EntityEncoding::World)?;
             wd.write_bytes(&self.unparsed);
 
             let raw = wd.into_raw(0, 0);
             deflate_bytes_zlib(&raw.mem)
         };
-        
+
         wd.write(&self.tag)?;
         wd.write_u32(self.uncompressed_size)?;
         wd.write_u32(self.uncompressed_size)?;
