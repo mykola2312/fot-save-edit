@@ -125,16 +125,12 @@ impl WriteStream {
         val: &T,
         ctx: ECtx,
     ) -> Result<()> {
-        let mut raw = val.encode(ctx)?;
-        self.skip(raw.mem.len());
-        self.buf.get_mut().append(&mut raw.mem);
+        self.reserve(val.get_enc_size());
+        val.encode(self, ctx)?;
         Ok(())
     }
 
     pub fn write<T: Decoder>(&mut self, val: &T) -> Result<()> {
-        //let mut raw = val.encode()?;
-        //self.skip(raw.mem.len());
-        //self.buf.get_mut().append(&mut raw.mem);
         self.reserve(val.get_enc_size());
         val.encode(self)?;
         Ok(())
