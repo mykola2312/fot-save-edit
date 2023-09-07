@@ -1,6 +1,6 @@
-use super::decoder::Decoder;
+use super::decoder::{Decoder, DecoderCtx};
 use super::raw::Raw;
-use super::stream::WriteStream;
+use super::stream::{ReadStream, WriteStream};
 use super::world::World;
 use anyhow::anyhow;
 use anyhow::Result;
@@ -46,14 +46,15 @@ impl Save {
             return Err(anyhow!("Unable to determine world block size"));
         }
 
-        let world = World::decode(&raw, world_offset, world_size)?;
+        let mut rd = ReadStream::new(&raw, world_offset);
+        let world = World::decode(&mut rd, (world_offset, world_size))?;
         Ok(Save { raw, world })
     }
 
     pub fn save(&self, path: &Path) -> Result<()> {
         let raw = {
             let mut wd = WriteStream::new(0);
-            wd.write(&self.world)?;
+            wd.write_ctx(&self.world, ())?;
             wd.into_raw(self.world.offset, self.world.size)
         };
         self.raw.assemble_file(path, vec![raw])?;

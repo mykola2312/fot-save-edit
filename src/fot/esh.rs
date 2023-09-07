@@ -1,6 +1,5 @@
 use super::decoder::Decoder;
 use super::fstring::FString;
-use super::raw::Raw;
 use super::stream::{ReadStream, WriteStream};
 use super::tag::Tag;
 use anyhow::Result;
@@ -76,8 +75,8 @@ impl ESHValue {
 }
 
 impl Decoder for ESHValue {
-    fn decode(raw: &Raw, offset: usize, _: usize) -> Result<Self> {
-        let mut rd = ReadStream::new(raw, offset);
+    fn decode<'a>(rd: &mut ReadStream<'a>) -> Result<Self> {
+        let offset = rd.offset();
         let data_type = rd.read_u32()?;
         let data_size = rd.read_u32()?;
 
@@ -85,8 +84,8 @@ impl Decoder for ESHValue {
             Self::TYPE_BOOL => ESHValue::Bool(rd.read_u8()? == 1),
             Self::TYPE_FLOAT => ESHValue::Float(rd.read_f32()?),
             Self::TYPE_INT => ESHValue::Int(rd.read_i32()?),
-            Self::TYPE_STRING => ESHValue::String(rd.read::<FString>(0)?),
-            Self::TYPE_SPRITE => ESHValue::Sprite(rd.read::<FString>(0)?),
+            Self::TYPE_STRING => ESHValue::String(rd.read::<FString>()?),
+            Self::TYPE_SPRITE => ESHValue::Sprite(rd.read::<FString>()?),
             Self::TYPE_ESBIN => ESHValue::Binary(rd.read_bytes(data_size as usize)?),
             Self::TYPE_ENTTITYFLAGS => {
                 let entity_id = rd.read_u16()?;
@@ -247,15 +246,15 @@ pub struct ESH {
 }
 
 impl Decoder for ESH {
-    fn decode(raw: &Raw, offset: usize, _: usize) -> Result<Self> {
-        let mut rd = ReadStream::new(raw, offset);
-        let tag: Tag = rd.read(0)?;
+    fn decode<'a>(rd: &mut ReadStream<'a>) -> Result<Self> {
+        let offset = rd.offset();
+        let tag: Tag = rd.read()?;
 
         let n = rd.read_u32()? as usize;
         let mut props: IndexMap<FString, ESHValue> = IndexMap::with_capacity(n);
         for _ in 0..n {
-            let name: FString = rd.read(0)?;
-            let value: ESHValue = rd.read(0)?;
+            let name: FString = rd.read()?;
+            let value: ESHValue = rd.read()?;
             props.insert(name, value);
         }
 

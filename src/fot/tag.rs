@@ -1,5 +1,4 @@
 use super::decoder::Decoder;
-use super::raw::Raw;
 use super::stream::{ReadStream, WriteStream};
 use anyhow::Result;
 
@@ -10,10 +9,9 @@ pub struct Tag {
 }
 
 impl Decoder for Tag {
-    fn decode(raw: &Raw, offset: usize, size: usize) -> Result<Self> {
-        let mut rd = ReadStream::new(raw, offset);
-        let name: String = rd.read(0)?;
-        let version: String = rd.read(0)?;
+    fn decode<'a>(rd: &mut ReadStream<'a>) -> Result<Self> {
+        let name: String = rd.read()?;
+        let version: String = rd.read()?;
         Ok(Tag { name, version })
     }
 
