@@ -1,10 +1,11 @@
 use super::raw::Raw;
+use super::stream::WriteStream;
 use anyhow::Result;
 use std::str;
 
 pub trait Decoder: Sized {
     fn decode(raw: &Raw, offset: usize, size: usize) -> Result<Self>;
-    fn encode(&self) -> Result<Raw>;
+    fn encode(&self, wd: &mut WriteStream) -> Result<()>;
     fn get_enc_size(&self) -> usize;
 }
 
@@ -23,14 +24,10 @@ impl Decoder for String {
         }
     }
 
-    fn encode(&self) -> Result<Raw> {
-        let mut str = self.as_bytes().to_vec();
-        str.push(0);
-        Ok(Raw {
-            offset: 0,
-            size: str.len(),
-            mem: str,
-        })
+    fn encode(&self, wd: &mut WriteStream) -> Result<()> {
+        wd.write_bytes(self.as_bytes());
+        wd.write_u8(0)?;
+        Ok(())
     }
 
     fn get_enc_size(&self) -> usize {

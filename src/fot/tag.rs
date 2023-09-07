@@ -17,11 +17,10 @@ impl Decoder for Tag {
         Ok(Tag { name, version })
     }
 
-    fn encode(&self) -> Result<Raw> {
-        let mut wd = WriteStream::new(self.get_enc_size());
+    fn encode(&self, wd: &mut WriteStream) -> Result<()> {
         wd.write(&self.name)?;
         wd.write(&self.version)?;
-        Ok(wd.into_raw(0, self.get_enc_size()))
+        Ok(())
     }
 
     fn get_enc_size(&self) -> usize {

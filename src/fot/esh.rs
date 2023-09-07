@@ -119,8 +119,7 @@ impl Decoder for ESHValue {
         })
     }
 
-    fn encode(&self) -> Result<Raw> {
-        let mut wd = WriteStream::new(self.get_enc_size());
+    fn encode(&self, wd: &mut WriteStream) -> Result<()> {
         match self {
             ESHValue::Unknown(unk) => {
                 wd.write_u32(unk.data_type)?;
@@ -191,7 +190,7 @@ impl Decoder for ESHValue {
             }
         };
 
-        Ok(wd.into_raw(0, 0))
+        Ok(())
     }
 
     fn get_enc_size(&self) -> usize {
@@ -268,8 +267,7 @@ impl Decoder for ESH {
         })
     }
 
-    fn encode(&self) -> Result<Raw> {
-        let mut wd = WriteStream::new(self.get_enc_size());
+    fn encode(&self, wd: &mut WriteStream) -> Result<()> {
         wd.write(&self.tag)?;
 
         wd.write_u32(self.props.len() as u32)?;
@@ -278,7 +276,7 @@ impl Decoder for ESH {
             wd.write(value)?;
         }
 
-        Ok(wd.into_raw(0, 0))
+        Ok(())
     }
 
     fn get_enc_size(&self) -> usize {
