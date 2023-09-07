@@ -51,8 +51,7 @@ impl DecoderCtx<&mut EntityList, &EntityList> for Entity {
         })
     }
 
-    fn encode(&self, ctx: &EntityList) -> Result<Raw> {
-        let mut wd = WriteStream::new(self.get_enc_size());
+    fn encode(&self, wd: &mut WriteStream, ctx: &EntityList) -> Result<()> {
         match ctx.get_entity_encoding() {
             EntityEncoding::File => {
                 wd.write(ctx.get_type_name(self.type_idx))?;
@@ -67,7 +66,7 @@ impl DecoderCtx<&mut EntityList, &EntityList> for Entity {
                 }
             }
         }
-        Ok(wd.into_raw(0, 0))
+        Ok(())
     }
 
     fn get_enc_size(&self) -> usize {

@@ -11,7 +11,7 @@ pub trait Decoder: Sized {
 
 pub trait DecoderCtx<DCtx, ECtx>: Sized {
     fn decode(raw: &Raw, offset: usize, size: usize, ctx: DCtx) -> Result<Self>;
-    fn encode(&self, ctx: ECtx) -> Result<Raw>;
+    fn encode(&self, wd: &mut WriteStream, ctx: ECtx) -> Result<()>;
     fn get_enc_size(&self) -> usize;
 }
 
