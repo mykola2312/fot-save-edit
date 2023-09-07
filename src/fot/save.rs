@@ -1,5 +1,6 @@
 use super::decoder::Decoder;
 use super::raw::Raw;
+use super::stream::WriteStream;
 use super::world::World;
 use anyhow::anyhow;
 use anyhow::Result;
@@ -50,7 +51,12 @@ impl Save {
     }
 
     pub fn save(&self, path: &Path) -> Result<()> {
-        self.raw.assemble_file(path, vec![self.world.encode()?])?;
+        let raw = {
+            let mut wd = WriteStream::new(0);
+            wd.write(&self.world)?;
+            wd.into_raw(self.world.offset, self.world.size)
+        };
+        self.raw.assemble_file(path, vec![raw])?;
 
         Ok(())
     }

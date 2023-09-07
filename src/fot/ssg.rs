@@ -18,11 +18,10 @@ impl Decoder for SSG {
         Ok(SSG { tag, unk1 })
     }
 
-    fn encode(&self) -> Result<Raw> {
-        let mut wd = WriteStream::new(self.get_enc_size());
+    fn encode(&self, wd: &mut WriteStream) -> Result<()> {
         wd.write(&self.tag)?;
         wd.write_bytes(&self.unk1);
-        Ok(wd.into_raw(0, 0x14))
+        Ok(())
     }
 
     fn get_enc_size(&self) -> usize {

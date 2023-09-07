@@ -48,8 +48,7 @@ impl Decoder for SGD {
         })
     }
 
-    fn encode(&self) -> Result<Raw> {
-        let mut wd = WriteStream::new(self.enc_size);
+    fn encode(&self, wd: &mut WriteStream) -> Result<()> {
         wd.write(&self.tag)?;
         wd.write_bytes(&self.unk1);
 
@@ -66,7 +65,7 @@ impl Decoder for SGD {
             }
         }
 
-        Ok(wd.into_raw(0, 0))
+        Ok(())
     }
 
     fn get_enc_size(&self) -> usize {

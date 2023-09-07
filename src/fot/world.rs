@@ -88,7 +88,7 @@ impl Decoder for World {
         })
     }
 
-    fn encode(&self) -> Result<Raw> {
+    fn encode(&self, wd: &mut WriteStream) -> Result<()> {
         let data = {
             let mut wd = WriteStream::new(self.uncompressed_size as usize);
             
@@ -101,14 +101,13 @@ impl Decoder for World {
             let raw = wd.into_raw(0, 0);
             deflate_bytes_zlib(&raw.mem)
         };
-
-        let mut wd = WriteStream::new(self.get_enc_size());
+        
         wd.write(&self.tag)?;
         wd.write_u32(self.uncompressed_size)?;
         wd.write_u32(self.uncompressed_size)?;
         wd.write_bytes(&data);
 
-        Ok(wd.into_raw(self.offset, self.size))
+        Ok(())
     }
 
     fn get_enc_size(&self) -> usize {

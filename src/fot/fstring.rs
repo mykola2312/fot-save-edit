@@ -1,7 +1,8 @@
 use super::decoder::Decoder;
 use super::raw::Raw;
+use super::stream::WriteStream;
 use anyhow::Result;
-use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
+use byteorder::{LittleEndian, ReadBytesExt};
 use encoding_rs::WINDOWS_1251;
 use std::borrow::Borrow;
 use std::fmt;
@@ -53,26 +54,20 @@ impl Decoder for FString {
         }
     }
 
-    fn encode(&self) -> Result<Raw> {
-        let mut buf = vec![0u8; 4];
-        let mut wdr = Cursor::new(&mut buf[..]);
+    fn encode(&self, wd: &mut WriteStream) -> Result<()> {
         let (chars, _, _) = WINDOWS_1251.encode(self.str.as_str());
         if self.encoding == FStringEncoding::ANSI {
-            wdr.write_u32::<LittleEndian>(chars.len() as u32 & !(1 << 31))?;
-            buf.extend(chars.iter());
+            wd.write_u32(chars.len() as u32 & !(1 << 31))?;
+            wd.write_bytes(&chars);
         } else {
             // WCS2
-            wdr.write_u32::<LittleEndian>(chars.len() as u32 | (1 << 31))?;
+            wd.write_u32(chars.len() as u32 | (1 << 31))?;
             for &c in chars.iter() {
-                buf.push(c);
-                buf.push(0);
+                wd.write_u8(c)?;
+                wd.write_u8(0)?;
             }
         };
-        Ok(Raw {
-            offset: 0,
-            size: buf.len(),
-            mem: buf,
-        })
+        Ok(())
     }
 
     fn get_enc_size(&self) -> usize {
