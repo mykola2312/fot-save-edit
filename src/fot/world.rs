@@ -1,4 +1,4 @@
-use super::decoder::{Decoder, DecoderCtx};
+use super::decoder::DecoderCtx;
 use super::entitylist::{EntityEncoding, EntityList};
 use super::fstring::FString;
 use super::raw::Raw;
@@ -31,16 +31,16 @@ pub struct World {
 }
 
 impl World {
-    const WORLD_TAG_LEN: usize = 11;
     const WORLD_HDR_LEN: usize = 0x13;
 
     pub fn test(&mut self) -> Result<()> {
-        let actor_type = self.entlist.get_type_idx("Actor").unwrap();
-        for (id, ent) in &self.entlist {
-            if ent.type_idx == actor_type {
-                println!("Actor {}", id);
-            }
+        //let actor_type = self.entlist.get_type_idx("Actor").unwrap();
+        let ent = self.entlist.get_entity(2122);
+        let esh = ent.esh.as_ref().unwrap();
+        for (name, value) in &esh.props {
+            println!("{} {}", name, value);
         }
+        self.entlist.dump_to_entfile(ent, Path::new("D:\\actor.ent"))?;
 
         Ok(())
     }
