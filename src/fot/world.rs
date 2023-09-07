@@ -4,7 +4,7 @@ use super::fstring::FString;
 use super::raw::Raw;
 use super::sgd::SGD;
 use super::ssg::SSG;
-use super::stream::ReadStream;
+use super::stream::{ReadStream, WriteStream};
 use super::tag::Tag;
 use anyhow::anyhow;
 use anyhow::Result;
@@ -16,16 +16,20 @@ use std::io::Cursor;
 use std::path::Path;
 
 pub struct World {
+    pub offset: usize,
+    pub size: usize,
+
     pub tag: Tag,
     pub uncompressed_size: u32,
-
-    pub data: Raw,
+    //pub data: Raw,
 
     pub mission: FString,
     pub sgd: SGD,
     pub ssg: SSG,
 
     pub entlist: EntityList,
+
+    pub unparsed: Vec<u8>
 }
 
 impl World {
@@ -34,10 +38,11 @@ impl World {
 
     pub fn test(&mut self) -> Result<()> {
         let actor_type = self.entlist.get_type_idx("Actor").unwrap();
-        println!("Actor type {}", actor_type);
-        //for (id, ent) in &self.entlist {
-        //    println!("{} {}", id, ent.type_idx);
-        //}
+        for (id, ent) in &self.entlist {
+            if ent.type_idx == actor_type {
+                println!("Actor {}", id);
+            }
+        }
 
         Ok(())
     }
@@ -67,46 +72,46 @@ impl Decoder for World {
 
         let entlist: EntityList = rd.read_opt(0, EntityEncoding::World)?;
 
+        let unparsed = rd.read_bytes(data.mem.len() - rd.offset())?;
+
         Ok(World {
+            offset,
+            size,
             tag,
             uncompressed_size,
-            data,
+            //data,
             mission,
             sgd,
             ssg,
             entlist,
+            unparsed,
         })
     }
 
     fn encode(&self) -> Result<Raw> {
-        let mut hdr = [0u8; 8];
-        {
-            let mut wdr = Cursor::new(&mut hdr[..]);
-            let _ = wdr.write_u32::<LittleEndian>(self.uncompressed_size);
-            let _ = wdr.write_u32::<LittleEndian>(self.uncompressed_size);
-        }
-        let data = deflate_bytes_zlib(&self.data.mem);
+        let data = {
+            let mut wd = WriteStream::new(self.uncompressed_size as usize);
+            
+            wd.write(&self.mission)?;
+            wd.write(&self.sgd)?;
+            wd.write(&self.ssg)?;
+            wd.write_opt(&self.entlist, EntityEncoding::World)?;
+            wd.write_bytes(&self.unparsed);
 
-        Ok(Raw::join(
-            self.data.offset,
-            self.data.size,
-            &mut [
-                self.tag.encode()?,
-                Raw {
-                    offset: Self::WORLD_TAG_LEN,
-                    size: 8,
-                    mem: hdr.to_vec(),
-                },
-                Raw {
-                    offset: Self::WORLD_HDR_LEN,
-                    size: data.len(),
-                    mem: data,
-                },
-            ],
-        ))
+            let raw = wd.into_raw(0, 0);
+            deflate_bytes_zlib(&raw.mem)
+        };
+
+        let mut wd = WriteStream::new(self.get_enc_size());
+        wd.write(&self.tag)?;
+        wd.write_u32(self.uncompressed_size)?;
+        wd.write_u32(self.uncompressed_size)?;
+        wd.write_bytes(&data);
+
+        Ok(wd.into_raw(self.offset, self.size))
     }
 
     fn get_enc_size(&self) -> usize {
-        Self::WORLD_HDR_LEN + self.data.mem.len()
+        Self::WORLD_HDR_LEN + self.size
     }
 }
