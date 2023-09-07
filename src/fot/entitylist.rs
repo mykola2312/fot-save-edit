@@ -58,6 +58,10 @@ impl EntityList {
         &self.types[type_idx]
     }
 
+    pub fn get_entity(&self, id: usize) -> &Entity {
+        &self.ents[id-1]
+    }
+
     pub fn dump_to_entfile(&self, ent: &Entity, path: &Path) -> Result<()> {
         let esh = match &ent.esh {
             Some(esh) => esh,
@@ -70,6 +74,7 @@ impl EntityList {
 
         let mut wd = WriteStream::new(tag.get_enc_size() + ent.get_enc_size());
         wd.write(&tag)?;
+        wd.write(&type_name)?;
         wd.write(esh)?;
 
         wd.into_raw(0, 0).dump(path)?;

@@ -54,6 +54,7 @@ pub enum ESHValue {
     Int(i32),
     String(FString),
     Sprite(FString),
+    Enum(FString),
     Binary(Vec<u8>),
     EntityFlags(ESHEntityFlags),
     Frame(ESHFrame),
@@ -68,6 +69,7 @@ impl ESHValue {
     const TYPE_INT: u32 = 3;
     const TYPE_STRING: u32 = 4;
     const TYPE_SPRITE: u32 = 8;
+    const TYPE_ENUM: u32 = 9;
     const TYPE_ESBIN: u32 = 11;
     const TYPE_ENTTITYFLAGS: u32 = 12;
     const TYPE_FRAME: u32 = 13;
@@ -76,7 +78,6 @@ impl ESHValue {
 
 impl Decoder for ESHValue {
     fn decode<'a>(rd: &mut ReadStream<'a>) -> Result<Self> {
-        let offset = rd.offset();
         let data_type = rd.read_u32()?;
         let data_size = rd.read_u32()?;
 
@@ -86,19 +87,20 @@ impl Decoder for ESHValue {
             Self::TYPE_INT => ESHValue::Int(rd.read_i32()?),
             Self::TYPE_STRING => ESHValue::String(rd.read::<FString>()?),
             Self::TYPE_SPRITE => ESHValue::Sprite(rd.read::<FString>()?),
+            Self::TYPE_ENUM => ESHValue::Enum(rd.read::<FString>()?),
             Self::TYPE_ESBIN => ESHValue::Binary(rd.read_bytes(data_size as usize)?),
             Self::TYPE_ENTTITYFLAGS => {
                 let entity_id = rd.read_u16()?;
                 let flags = rd.read_u16()?;
                 ESHValue::EntityFlags(ESHEntityFlags { entity_id, flags })
-            }
+            },
             Self::TYPE_FRAME => {
                 let unk1 = rd.read_bytes(0x24)?;
                 let c = rd.read_f32()? * 4.;
                 let b = rd.read_f32()? * 4.;
                 let a = rd.read_f32()? * 4.;
                 ESHValue::Frame(ESHFrame { unk1, a, b, c })
-            }
+            },
             Self::TYPE_RECT => {
                 let top = rd.read_i32()?;
                 let left = rd.read_i32()?;
@@ -110,7 +112,7 @@ impl Decoder for ESHValue {
                     right,
                     bottom,
                 })
-            }
+            },
             _ => {
                 let data = rd.read_bytes(data_size as usize)?;
                 ESHValue::Unknown(ESHUnknown { data_type, data })
@@ -125,50 +127,56 @@ impl Decoder for ESHValue {
                 wd.write_u32(unk.data.len() as u32)?;
 
                 wd.write_bytes(&unk.data);
-            }
+            },
             ESHValue::Bool(val) => {
                 wd.write_u32(Self::TYPE_BOOL)?;
                 wd.write_u32(1)?;
 
                 wd.write_u8(*val as u8)?;
-            }
+            },
             ESHValue::Float(val) => {
                 wd.write_u32(Self::TYPE_FLOAT)?;
                 wd.write_u32(4)?;
 
                 wd.write_f32(*val)?;
-            }
+            },
             ESHValue::Int(val) => {
                 wd.write_u32(Self::TYPE_INT)?;
                 wd.write_u32(4)?;
 
                 wd.write_i32(*val)?;
-            }
+            },
             ESHValue::String(str) => {
                 wd.write_u32(Self::TYPE_STRING)?;
                 wd.write_u32(str.get_enc_size() as u32)?;
 
                 wd.write(str)?;
-            }
+            },
             ESHValue::Sprite(spr) => {
                 wd.write_u32(Self::TYPE_SPRITE)?;
                 wd.write_u32(spr.get_enc_size() as u32)?;
 
                 wd.write(spr)?;
-            }
+            },
+            ESHValue::Enum(spr) => {
+                wd.write_u32(Self::TYPE_ENUM)?;
+                wd.write_u32(spr.get_enc_size() as u32)?;
+
+                wd.write(spr)?;
+            },
             ESHValue::Binary(bin) => {
                 wd.write_u32(Self::TYPE_ESBIN)?;
                 wd.write_u32(bin.len() as u32)?;
 
                 wd.write_bytes(bin);
-            }
+            },
             ESHValue::EntityFlags(eflags) => {
                 wd.write_u32(Self::TYPE_ENTTITYFLAGS)?;
                 wd.write_u32(ESHEntityFlags::SIZE as u32)?;
 
                 wd.write_u16(eflags.entity_id)?;
                 wd.write_u16(eflags.flags)?;
-            }
+            },
             ESHValue::Frame(frame) => {
                 wd.write_u32(Self::TYPE_FRAME)?;
                 wd.write_u32(ESHFrame::SIZE as u32)?;
@@ -177,7 +185,7 @@ impl Decoder for ESHValue {
                 wd.write_f32(frame.c / 4.)?;
                 wd.write_f32(frame.b / 4.)?;
                 wd.write_f32(frame.a / 4.)?;
-            }
+            },
             ESHValue::Rect(rect) => {
                 wd.write_u32(Self::TYPE_RECT)?;
                 wd.write_u32(ESHRect::SIZE as u32)?;
@@ -201,6 +209,7 @@ impl Decoder for ESHValue {
                 ESHValue::Int(_) => 4,
                 ESHValue::String(str) => str.get_enc_size(),
                 ESHValue::Sprite(spr) => spr.get_enc_size(),
+                ESHValue::Enum(enm) => enm.get_enc_size(),
                 ESHValue::Binary(bin) => bin.len(),
                 ESHValue::EntityFlags(_) => ESHEntityFlags::SIZE,
                 ESHValue::Frame(_) => ESHFrame::SIZE,
@@ -220,6 +229,7 @@ impl fmt::Display for ESHValue {
             ESHValue::Int(val) => write!(f, "{}", val),
             ESHValue::String(str) => write!(f, "{}", str),
             ESHValue::Sprite(spr) => write!(f, "{}", spr),
+            ESHValue::Enum(enm) => write!(f, "{}", enm),
             ESHValue::Binary(bin) => write!(f, "Binary, size {}", bin.len()),
             ESHValue::EntityFlags(val) => {
                 write!(f, "entity {} flags {:x}", val.entity_id, val.flags)
