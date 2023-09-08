@@ -255,6 +255,16 @@ pub struct ESH {
     enc_size: usize,
 }
 
+impl ESH {
+    pub fn get(&self, name: &str) -> Option<&ESHValue> {
+        self.props.get(name)
+    }
+
+    pub fn set(&mut self, name: &str, value: ESHValue) {
+        self.props[name] = value;
+    }
+}
+
 impl Decoder for ESH {
     fn decode<'a>(rd: &mut ReadStream<'a>) -> Result<Self> {
         let offset = rd.offset();

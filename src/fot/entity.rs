@@ -1,8 +1,9 @@
+use super::attributes::Attributes;
 use super::decoder::DecoderCtx;
 use super::entitylist::{EntityEncoding, EntityList};
-use super::esh::ESH;
+use super::esh::{ESHValue, ESH};
 use super::stream::{ReadStream, WriteStream};
-use anyhow::Result;
+use anyhow::{anyhow, Result};
 
 pub const NO_FLAGS: u32 = 0;
 pub const NO_ESH: usize = 0xFFFF;
@@ -12,6 +13,35 @@ pub struct Entity {
     pub type_idx: usize,
     pub esh: Option<ESH>,
     enc_size: usize,
+}
+
+impl Entity {
+    pub fn get_esh(&self) -> Result<&ESH> {
+        match &self.esh {
+            Some(esh) => Ok(esh),
+            None => Err(anyhow!("Entity has no ESH")),
+        }
+    }
+
+    pub fn get_esh_mut(&mut self) -> Result<&mut ESH> {
+        match &mut self.esh {
+            Some(esh) => Ok(esh),
+            None => Err(anyhow!("Entity has no ESH")),
+        }
+    }
+
+    pub fn get_attributes(&self) -> Result<Attributes> {
+        let value = match self.get_esh()?.get("Attributes") {
+            Some(value) => value,
+            None => return Err(anyhow!("Entity has no Attributes")),
+        };
+
+        if let ESHValue::Binary(bin) = value {
+            Ok(Attributes::from_binary(&bin)?)
+        } else {
+            Err(anyhow!("Attributes is not binary"))
+        }
+    }
 }
 
 impl DecoderCtx<&mut EntityList, &EntityList> for Entity {
