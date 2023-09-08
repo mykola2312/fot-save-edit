@@ -38,7 +38,8 @@ impl World {
 
     pub fn test(&mut self) -> Result<()> {
         //let actor_type = self.entlist.get_type_idx("Actor").unwrap();
-        let ent = self.entlist.get_entity(2122);
+        //let ent = self.entlist.get_entity_mut(2122);
+        let ent = self.entlist.get_entity_mut(2158);
         let esh = ent.get_esh()?;
         for (name, value) in &esh.props {
             println!("{} {}", name, value);
@@ -46,8 +47,23 @@ impl World {
         //self.entlist.dump_to_entfile(ent, Path::new("D:\\actor.ent"))?;
 
         println!("");
-        let attributes = ent.get_attributes()?;
-        dbg!(attributes);
+        let mut attributes = ent.get_attributes()?;
+        if let ESHValue::Binary(bin) = &esh.get("Attributes").unwrap() {
+            dbg!(bin.len());
+        }
+        attributes.stats["strength"] = 10;
+        attributes.stats["perception"] = 10;
+        attributes.stats["endurance"] = 10;
+        attributes.stats["charisma"] = 10;
+        attributes.stats["intelligence"] = 10;
+        attributes.stats["agility"] = 10;
+        attributes.stats["luck"] = 10;
+        ent.set_attributes(attributes)?;
+
+        let esh = ent.get_esh()?;
+        if let ESHValue::Binary(bin) = &esh.get("Attributes").unwrap() {
+            dbg!(bin.len());
+        }
 
         Ok(())
     }
