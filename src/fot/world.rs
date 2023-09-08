@@ -12,6 +12,7 @@ use deflate::deflate_bytes_zlib;
 use inflate::inflate_bytes_zlib;
 
 use std::path::Path;
+use super::esh::{ESH, ESHValue};
 
 pub struct World {
     pub offset: usize,
@@ -40,7 +41,19 @@ impl World {
         for (name, value) in &esh.props {
             println!("{} {}", name, value);
         }
-        self.entlist.dump_to_entfile(ent, Path::new("D:\\actor.ent"))?;
+        //self.entlist.dump_to_entfile(ent, Path::new("D:\\actor.ent"))?;
+
+        println!("");
+        if let ESHValue::Binary(attributes) = &esh.props["Attributes"] {
+            let raw = Raw { offset: 0, size: attributes.len(), mem: attributes.to_vec() };
+            let mut rd = ReadStream::new(&raw, 0);
+
+            let size = rd.read_u32()?;
+            let attrs_esh: ESH = rd.read()?;
+            for (name, value) in &attrs_esh.props {
+                println!("{} {}", name, value);
+            }
+        }
 
         Ok(())
     }

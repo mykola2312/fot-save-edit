@@ -1,0 +1,10 @@
+7 * 4	// special, int
+11 * 4	// xp/rank/age, int
+26 * 4	// stats
+18 * 4	// skils
+18 * 1 // skill tags
+27 * 1 ? // trais, bool
+11 * 1 ? // type, bool
+101 * 4 ? // perks, int
+10 * 4 ? // unk ?
+10 * 4 ? // addictions, int
