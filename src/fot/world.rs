@@ -58,6 +58,9 @@ impl World {
         attributes.stats["intelligence"] = 10;
         attributes.stats["agility"] = 10;
         attributes.stats["luck"] = 10;
+        for (_, value) in attributes.skills.iter_mut() {
+            *value = 300;
+        }
         ent.set_attributes(attributes)?;
 
         let esh = ent.get_esh()?;
