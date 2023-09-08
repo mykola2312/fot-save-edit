@@ -6,15 +6,15 @@ use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
 use std::io::Cursor;
 
 pub struct ReadStream<'a> {
-    raw: &'a Raw,
+    mem: &'a [u8],
     rdr: Cursor<&'a [u8]>,
 }
 
 impl<'a> ReadStream<'a> {
-    pub fn new(raw: &'a Raw, offset: usize) -> ReadStream<'a> {
-        let mut rdr = Cursor::new(&raw.mem[..]);
+    pub fn new(mem: &'a [u8], offset: usize) -> ReadStream<'a> {
+        let mut rdr = Cursor::new(mem);
         rdr.set_position(offset as u64);
-        ReadStream { raw: raw, rdr: rdr }
+        ReadStream { mem, rdr }
     }
 
     pub fn offset(&self) -> usize {
@@ -26,7 +26,7 @@ impl<'a> ReadStream<'a> {
     }
 
     pub fn size(&self) -> usize {
-        self.raw.mem.len()
+        self.mem.len()
     }
 
     pub fn is_end(&self) -> bool {
@@ -34,15 +34,15 @@ impl<'a> ReadStream<'a> {
     }
 
     pub fn as_byte_arr(&self) -> &[u8] {
-        &self.raw.mem[self.offset()..]
+        &self.mem[self.offset()..]
     }
 
     pub fn as_bytes(&mut self, size: usize) -> Result<&'a [u8]> {
-        if self.offset() + size > self.raw.mem.len() {
-            dbg!(self.offset(), size, self.raw.mem.len());
+        if self.offset() + size > self.mem.len() {
+            dbg!(self.offset(), size, self.mem.len());
             Err(anyhow!("as_bytes/read_bytes size is bigger than buffer"))
         } else {
-            let buf = &self.raw.mem[self.offset()..self.offset() + size];
+            let buf = &self.mem[self.offset()..self.offset() + size];
             self.skip(size);
             Ok(buf)
         }

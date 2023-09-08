@@ -106,7 +106,6 @@ Attribute - ESH
             int derived[26]
             int skills[18]
             bool skill_tags[18]
-            bool opt_traits[27]
-            bool type[11]
+            bool opt_traits[38]
             int perks[111]
             int addictions[10]

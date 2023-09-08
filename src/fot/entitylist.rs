@@ -1,11 +1,11 @@
-use super::decoder::{DecoderCtx, Decoder};
+use super::decoder::{Decoder, DecoderCtx};
 use super::entity::Entity;
 use super::fstring::{FString, FStringEncoding};
 use super::stream::{ReadStream, WriteStream};
-use super::tag::{Tag, CTag};
-use std::path::Path;
-use anyhow::Result;
+use super::tag::{CTag, Tag};
 use anyhow::anyhow;
+use anyhow::Result;
+use std::path::Path;
 
 #[derive(Clone, Copy, PartialEq)]
 pub enum EntityEncoding {
@@ -59,13 +59,13 @@ impl EntityList {
     }
 
     pub fn get_entity(&self, id: usize) -> &Entity {
-        &self.ents[id-1]
+        &self.ents[id - 1]
     }
 
     pub fn dump_to_entfile(&self, ent: &Entity, path: &Path) -> Result<()> {
         let esh = match &ent.esh {
             Some(esh) => esh,
-            None => return Err(anyhow!("entity has no esh"))
+            None => return Err(anyhow!("entity has no esh")),
         };
 
         let tag = DEFAULT_ENTITY_TAG.to_tag();

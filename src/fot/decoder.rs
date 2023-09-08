@@ -19,7 +19,7 @@ impl Decoder for String {
         let bytes = rd.as_byte_arr();
         let pos = match bytes.iter().position(|&c| c == 0) {
             Some(pos) => pos,
-            None => return Err(anyhow!("No zero-terminator found"))
+            None => return Err(anyhow!("No zero-terminator found")),
         };
         let str = str::from_utf8(rd.as_bytes(pos)?)?;
         rd.skip(1);

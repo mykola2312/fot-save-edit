@@ -1,3 +1,4 @@
+mod attributes;
 mod decoder;
 mod entity;
 mod entitylist;
