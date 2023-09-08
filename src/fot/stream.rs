@@ -58,11 +58,7 @@ impl<'a> ReadStream<'a> {
 
     // read_opt - decode with optional paramters. required for complex structure
     // with different origins (save / entfile) like entities
-    pub fn read_ctx<T: DecoderCtx<DCtx, ECtx>, DCtx, ECtx>(
-        &mut self,
-        size: usize,
-        ctx: DCtx,
-    ) -> Result<T> {
+    pub fn read_ctx<T: DecoderCtx<DCtx, ECtx>, DCtx, ECtx>(&mut self, ctx: DCtx) -> Result<T> {
         Ok(T::decode(self, ctx)?)
     }
 

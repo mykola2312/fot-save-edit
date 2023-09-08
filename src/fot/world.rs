@@ -85,7 +85,7 @@ impl DecoderCtx<WorldOffsetSize, ()> for World {
         let sgd: SGD = rd.read()?;
         let ssg: SSG = rd.read()?;
 
-        let entlist: EntityList = rd.read_ctx(0, EntityEncoding::World)?;
+        let entlist: EntityList = rd.read_ctx(EntityEncoding::World)?;
 
         let unparsed = rd.read_bytes(data.len() - rd.offset())?;
 
