@@ -105,7 +105,7 @@ impl DecoderCtx<EntityEncoding, EntityEncoding> for EntityList {
                         first = false;
                     }
 
-                    let ent: Entity = rd.read_ctx(0, &mut ent_list)?;
+                    let ent: Entity = rd.read_ctx(&mut ent_list)?;
                     ent_list.ents.push(ent);
                 }
 
@@ -123,7 +123,7 @@ impl DecoderCtx<EntityEncoding, EntityEncoding> for EntityList {
                 let ent_count = rd.read_u16()?;
                 ent_list.unk1 = rd.read_u32()?;
                 for _ in 1..ent_count {
-                    let ent: Entity = rd.read_ctx(0, &mut ent_list)?;
+                    let ent: Entity = rd.read_ctx(&mut ent_list)?;
                     ent_list.ents.push(ent);
                 }
 
