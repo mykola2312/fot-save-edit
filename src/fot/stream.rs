@@ -70,6 +70,10 @@ impl<'a> ReadStream<'a> {
         Ok(self.rdr.read_u8()?)
     }
 
+    pub fn read_bool(&mut self) -> Result<bool> {
+        Ok(self.read_u8()? != 0)
+    }
+
     pub fn read_u16(&mut self) -> Result<u16> {
         Ok(self.rdr.read_u16::<LittleEndian>()?)
     }
@@ -146,6 +150,10 @@ impl WriteStream {
 
     pub fn write_u8(&mut self, val: u8) -> Result<()> {
         Ok(self.buf.write_u8(val)?)
+    }
+
+    pub fn write_bool(&mut self, val: bool) -> Result<()> {
+        self.write_u8(val as u8)
     }
 
     pub fn write_u16(&mut self, val: u16) -> Result<()> {

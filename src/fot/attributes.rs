@@ -1,8 +1,8 @@
+use super::esh::{ESHValue, ESH};
 use super::stream::{ReadStream, WriteStream};
-use super::esh::{ESH, ESHValue};
 use super::tag::Tag;
+use anyhow::{anyhow, Result};
 use indexmap::IndexMap;
-use anyhow::{Result, anyhow};
 
 const STATS: [&str; 7] = [
     "strength",
@@ -11,7 +11,7 @@ const STATS: [&str; 7] = [
     "charisma",
     "intelligence",
     "agility",
-    "luck"
+    "luck",
 ];
 
 const TRAITS: [&str; 11] = [
@@ -25,7 +25,7 @@ const TRAITS: [&str; 11] = [
     "age",
     "bonusAC",
     "sex",
-    "race"
+    "race",
 ];
 
 const DERIVED: [&str; 26] = [
@@ -54,7 +54,7 @@ const DERIVED: [&str; 26] = [
     "meleeDamage",
     "bonusDamage",
     "skillPerLevel",
-    "levelsPerPerk"
+    "levelsPerPerk",
 ];
 
 const SKILLS: [&str; 18] = [
@@ -75,7 +75,7 @@ const SKILLS: [&str; 18] = [
     "pilot",
     "barter",
     "gambling",
-    "outdoorsman"
+    "outdoorsman",
 ];
 
 const OPT_TRAITS: [&str; 38] = [
@@ -116,10 +116,138 @@ const OPT_TRAITS: [&str; 38] = [
     "doDieHard",
     "doHthEvade",
     "doDrunkenMaster",
-    "doNightPerson"
+    "doNightPerson",
 ];
 
-pub struct Attributes  {
+const PERKS: [&str; 111] = [
+    "awareness",
+    "bonusHtHAttacks",
+    "bonusHtHDamage",
+    "bonusMove",
+    "bonusRangedDamage",
+    "bonusRateofFire",
+    "fasterHealing",
+    "moreCriticals",
+    "nightVision",
+    "radResistance",
+    "toughness",
+    "strongBack",
+    "sharpshooter",
+    "silentRunning",
+    "survivalist",
+    "masterTrader",
+    "educated",
+    "healer",
+    "fortuneFinder",
+    "betterCriticals",
+    "slayer",
+    "sniper",
+    "silentDeath",
+    "actionBoy",
+    "lifegiver",
+    "dodger",
+    "snakeater",
+    "mrFixit",
+    "medic",
+    "masterThief",
+    "heaveHo",
+    "pickpocket",
+    "ghost",
+    "explorer",
+    "flowerChild",
+    "pathfinder",
+    "scout",
+    "mysteriousStranger",
+    "ranger",
+    "quickPockets",
+    "swiftLearner",
+    "tag",
+    "mutate",
+    "adrenalineRush",
+    "cautiousNature",
+    "comprehension",
+    "demolitionExpert",
+    "gambler",
+    "gainStrenght",
+    "gainPerception",
+    "gainEndurance",
+    "gainCharisma",
+    "gainIntelligence",
+    "gainAgility",
+    "gainLuck",
+    "harmless",
+    "hereandNow",
+    "hthEvade",
+    "lightStep",
+    "livingAnatomy",
+    "negotiator",
+    "packRat",
+    "pyromaniac",
+    "quickRecovery",
+    "salesman",
+    "stonewall",
+    "thief",
+    "weaponHandling",
+    "stuntMan",
+    "crazyBomber",
+    "roadWarrior",
+    "gunner",
+    "leadFoot",
+    "tunnelRat",
+    "bracing",
+    "flexible",
+    "bendTheRules",
+    "breakTheRules",
+    "loner",
+    "teamPlayer",
+    "leader",
+    "hitTheDeck",
+    "boneHead",
+    "brownNoser",
+    "dieHard",
+    "drunkenMaster",
+    "stat",
+    "radChild",
+    "cancerousGrowth",
+    "bonsai",
+    "steadyArm",
+    "psychotic",
+    "toughHige",
+    "deathSense",
+    "brutishHulk",
+    "talonOfFear",
+    "hideOfScars",
+    "wayOfTheFruit",
+    "twitchGamer",
+    "bluffMaster",
+    "divineFavour",
+    "unk1",
+    "unk2",
+    "unk3",
+    "unk4",
+    "unk5",
+    "unk6",
+    "unk7",
+    "unk8",
+    "unk9",
+    "unk10",
+];
+
+const ADDICTIONS: [&str; 10] = [
+    "buffoutAddiction",
+    "afterburnerAddiction",
+    "mentatsAddiction",
+    "psychoAddiction",
+    "radAwayAddiction",
+    "voodooAddiction",
+    "nukaColaAddiction",
+    "boozeAddiction",
+    "withdrawal",
+    "drunk",
+];
+
+#[derive(Debug)]
+pub struct Attributes {
     esh: ESH,
     pub stats: IndexMap<&'static str, u32>,
     pub traits: IndexMap<&'static str, u32>,
@@ -128,37 +256,72 @@ pub struct Attributes  {
     pub skill_tags: IndexMap<&'static str, bool>,
     pub opt_traits: IndexMap<&'static str, bool>,
     pub perks: IndexMap<&'static str, u32>,
-    pub addictions: IndexMap<&'static str, u32>
+    pub addictions: IndexMap<&'static str, u32>,
 }
 
 impl Attributes {
-    fn from_binary(bin: &[u8]) -> Result<Self> {        
+    pub fn from_binary(bin: &[u8]) -> Result<Self> {
         let mut rd = ReadStream::new(bin, 0);
-        
+
         let _ = rd.read_u32()?;
         let esh: ESH = rd.read()?;
         if esh.props["Binary"] == ESHValue::Bool(false) {
             return Err(anyhow!("Attributes Binary == false"));
         }
 
-        let mut stats: IndexMap<&'static str, u32>;
-        let mut traits: IndexMap<&'static str, u32>;
-        let mut derived: IndexMap<&'static str, u32>;
-        let mut skills: IndexMap<&'static str, u32>;
-        let mut skill_tags: IndexMap<&'static str, bool>;
-        let mut opt_traits: IndexMap<&'static str, bool>;
-        let mut perks: IndexMap<&'static str, u32>;
-        let mut addictions: IndexMap<&'static str, u32>;
+        let mut stats: IndexMap<&'static str, u32> = IndexMap::with_capacity(7);
+        let mut traits: IndexMap<&'static str, u32> = IndexMap::with_capacity(11);
+        let mut derived: IndexMap<&'static str, u32> = IndexMap::with_capacity(26);
+        let mut skills: IndexMap<&'static str, u32> = IndexMap::with_capacity(18);
+        let mut skill_tags: IndexMap<&'static str, bool> = IndexMap::with_capacity(18);
+        let mut opt_traits: IndexMap<&'static str, bool> = IndexMap::with_capacity(38);
+        let mut perks: IndexMap<&'static str, u32> = IndexMap::with_capacity(111);
+        let mut addictions: IndexMap<&'static str, u32> = IndexMap::with_capacity(10);
 
         if let ESHValue::Binary(binary) = &esh.props["esbin"] {
             let mut rd = ReadStream::new(&binary, 0);
-            
+
             let _ = rd.read_u32()?;
             let _: Tag = rd.read()?;
+
+            for i in 0..7 {
+                stats.insert(STATS[i], rd.read_u32()?);
+            }
+            for i in 0..11 {
+                traits.insert(TRAITS[i], rd.read_u32()?);
+            }
+            for i in 0..26 {
+                derived.insert(DERIVED[i], rd.read_u32()?);
+            }
+            for i in 0..18 {
+                skills.insert(SKILLS[i], rd.read_u32()?);
+            }
+            for i in 0..18 {
+                skill_tags.insert(SKILLS[i], rd.read_bool()?);
+            }
+            for i in 0..38 {
+                opt_traits.insert(OPT_TRAITS[i], rd.read_bool()?);
+            }
+            for i in 0..111 {
+                perks.insert(PERKS[i], rd.read_u32()?);
+            }
+            for i in 0..10 {
+                addictions.insert(ADDICTIONS[i], rd.read_u32()?);
+            }
+
+            Ok(Attributes {
+                esh,
+                stats,
+                traits,
+                derived,
+                skills,
+                skill_tags,
+                opt_traits,
+                perks,
+                addictions,
+            })
         } else {
             return Err(anyhow!("Attributes has no esbin"));
         }
-
-        todo!()
     }
 }
