@@ -62,6 +62,10 @@ impl EntityList {
         &self.ents[id - 1]
     }
 
+    pub fn get_entity_mut(&mut self, id: usize) -> &mut Entity {
+        &mut self.ents[id - 1]
+    }
+
     pub fn dump_to_entfile(&self, ent: &Entity, path: &Path) -> Result<()> {
         let esh = match &ent.esh {
             Some(esh) => esh,

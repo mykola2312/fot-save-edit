@@ -42,6 +42,13 @@ impl Entity {
             Err(anyhow!("Attributes is not binary"))
         }
     }
+
+    pub fn set_attributes(&mut self, attrs: Attributes) -> Result<()> {
+        self.get_esh_mut()?
+            .set("Attributes", ESHValue::Binary(attrs.into_binary()?));
+
+        Ok(())
+    }
 }
 
 impl DecoderCtx<&mut EntityList, &EntityList> for Entity {

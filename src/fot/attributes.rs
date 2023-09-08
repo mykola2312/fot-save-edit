@@ -1,3 +1,5 @@
+use crate::fot::decoder::Decoder;
+
 use super::esh::{ESHValue, ESH};
 use super::stream::{ReadStream, WriteStream};
 use super::tag::Tag;
@@ -256,6 +258,10 @@ const ADDICTIONS: [&str; 10] = [
 #[derive(Debug)]
 pub struct Attributes {
     esh: ESH,
+    size1: u32,
+    size2: u32,
+    tag: Tag,
+    enc_size: usize,
     pub stats: IndexMap<&'static str, u32>,
     pub traits: IndexMap<&'static str, u32>,
     pub derived: IndexMap<&'static str, u32>,
@@ -270,7 +276,7 @@ impl Attributes {
     pub fn from_binary(bin: &[u8]) -> Result<Self> {
         let mut rd = ReadStream::new(bin, 0);
 
-        let _ = rd.read_u32()?;
+        let size1 = rd.read_u32()?;
         let esh: ESH = rd.read()?;
         if esh.props["Binary"] == ESHValue::Bool(false) {
             return Err(anyhow!("Attributes Binary == false"));
@@ -288,8 +294,8 @@ impl Attributes {
         if let ESHValue::Binary(binary) = &esh.props["esbin"] {
             let mut rd = ReadStream::new(&binary, 0);
 
-            let _ = rd.read_u32()?;
-            let _: Tag = rd.read()?;
+            let size2 = rd.read_u32()?;
+            let tag: Tag = rd.read()?;
 
             for i in 0..MAX_STATS {
                 stats.insert(STATS[i], rd.read_u32()?);
@@ -316,8 +322,13 @@ impl Attributes {
                 addictions.insert(ADDICTIONS[i], rd.read_u32()?);
             }
 
+            let enc_size = binary.len();
             Ok(Attributes {
                 esh,
+                size1,
+                size2,
+                tag,
+                enc_size,
                 stats,
                 traits,
                 derived,
@@ -330,5 +341,48 @@ impl Attributes {
         } else {
             return Err(anyhow!("Attributes has no esbin"));
         }
+    }
+
+    pub fn into_binary(mut self) -> Result<Vec<u8>> {
+        let esbin = {
+            let mut wd = WriteStream::new(self.enc_size);
+
+            wd.write_u32(self.size2)?;
+            wd.write(&self.tag)?;
+
+            for (_, value) in self.stats {
+                wd.write_u32(value)?;
+            }
+            for (_, value) in self.traits {
+                wd.write_u32(value)?;
+            }
+            for (_, value) in self.derived {
+                wd.write_u32(value)?;
+            }
+            for (_, value) in self.skills {
+                wd.write_u32(value)?;
+            }
+            for (_, value) in self.skill_tags {
+                wd.write_bool(value)?;
+            }
+            for (_, value) in self.opt_traits {
+                wd.write_bool(value)?;
+            }
+            for (_, value) in self.perks {
+                wd.write_u32(value)?;
+            }
+            for (_, value) in self.addictions {
+                wd.write_u32(value)?;
+            }
+
+            wd.into_vec()
+        };
+        self.esh.set("esbin", ESHValue::Binary(esbin));
+
+        let mut wd = WriteStream::new(self.esh.get_enc_size());
+        wd.write_u32(self.size1)?;
+        wd.write(&self.esh)?;
+
+        Ok(wd.into_vec())
     }
 }
