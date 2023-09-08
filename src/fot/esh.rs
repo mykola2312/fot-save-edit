@@ -6,13 +6,13 @@ use anyhow::Result;
 use indexmap::IndexMap;
 use std::fmt;
 
-#[derive(Debug)]
+#[derive(Debug, Eq, PartialEq)]
 pub struct ESHUnknown {
     pub data_type: u32,
     pub data: Vec<u8>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Eq, PartialEq)]
 pub struct ESHEntityFlags {
     pub entity_id: u16,
     pub flags: u16,
@@ -22,7 +22,7 @@ impl ESHEntityFlags {
     const SIZE: usize = 4;
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub struct ESHFrame {
     pub unk1: Vec<u8>,
     pub a: f32,
@@ -34,7 +34,7 @@ impl ESHFrame {
     const SIZE: usize = 48;
 }
 
-#[derive(Debug)]
+#[derive(Debug, Eq, PartialEq)]
 pub struct ESHRect {
     pub top: i32,
     pub left: i32,
@@ -46,7 +46,7 @@ impl ESHRect {
     const SIZE: usize = 16;
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub enum ESHValue {
     Unknown(ESHUnknown),
     Bool(bool),
