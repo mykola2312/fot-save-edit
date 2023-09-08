@@ -91,3 +91,22 @@ esh data types
 
 21 - FString
 25 - FString
+
+Attributes - player stats and skills
+Modifiers - same as Attributes but applying new values to Attributes
+
+Attribute - ESH
+    int levSincePerk
+    bool Binary
+    esbin
+        u32 section_size
+        <attribs>
+            int stats[7]
+            int traits[11]
+            int derived[26]
+            int skills[18]
+            bool skill_tags[18]
+            bool opt_traits[27]
+            bool type[11]
+            int perks[111]
+            int addictions[10]
