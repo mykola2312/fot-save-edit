@@ -98,12 +98,16 @@ impl WriteStream {
         }
     }
 
+    pub fn into_vec(self) -> Vec<u8> {
+        self.buf.into_inner()
+    }
+
     pub fn into_raw(self, offset: usize, size: usize) -> Raw {
         let buf_size = self.buf.get_ref().len();
         Raw {
             offset: offset,
             size: if size == 0 { buf_size } else { size },
-            mem: self.buf.into_inner(),
+            mem: self.into_vec(),
         }
     }
 
