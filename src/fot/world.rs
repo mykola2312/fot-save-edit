@@ -1,3 +1,5 @@
+use crate::fot::attributes;
+
 use super::decoder::DecoderCtx;
 use super::entitylist::{EntityEncoding, EntityList};
 use super::fstring::FString;
@@ -12,6 +14,7 @@ use deflate::deflate_bytes_zlib;
 use inflate::inflate_bytes_zlib;
 
 use super::esh::{ESHValue, ESH};
+use super::attributes::Attributes;
 use std::path::Path;
 
 pub struct World {
@@ -43,25 +46,9 @@ impl World {
         //self.entlist.dump_to_entfile(ent, Path::new("D:\\actor.ent"))?;
 
         println!("");
-        if let ESHValue::Binary(attributes) = &esh.props["Attributes"] {
-            let mut rd = ReadStream::new(&attributes, 0);
-
-            let size = rd.read_u32()?;
-            let attrs_esh: ESH = rd.read()?;
-            for (name, value) in &attrs_esh.props {
-                println!("{} {}", name, value);
-            }
-        }
-
-        println!("");
-        if let ESHValue::Binary(attributes) = &esh.props["Modifiers"] {
-            let mut rd = ReadStream::new(&attributes, 0);
-
-            let size = rd.read_u32()?;
-            let attrs_esh: ESH = rd.read()?;
-            for (name, value) in &attrs_esh.props {
-                println!("{} {}", name, value);
-            }
+        if let ESHValue::Binary(binary) = &esh.props["Attributes"] {
+            let attributes = Attributes::from_binary(&binary)?;
+            dbg!(attributes);
         }
 
         Ok(())
