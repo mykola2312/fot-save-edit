@@ -11,8 +11,8 @@ use anyhow::Result;
 use deflate::deflate_bytes_zlib;
 use inflate::inflate_bytes_zlib;
 
+use super::esh::{ESHValue, ESH};
 use std::path::Path;
-use super::esh::{ESH, ESHValue};
 
 pub struct World {
     pub offset: usize,
@@ -21,14 +21,13 @@ pub struct World {
     pub tag: Tag,
     pub uncompressed_size: u32,
     //pub data: Raw,
-
     pub mission: FString,
     pub sgd: SGD,
     pub ssg: SSG,
 
     pub entlist: EntityList,
 
-    pub unparsed: Vec<u8>
+    pub unparsed: Vec<u8>,
 }
 
 impl World {
@@ -45,8 +44,18 @@ impl World {
 
         println!("");
         if let ESHValue::Binary(attributes) = &esh.props["Attributes"] {
-            let raw = Raw { offset: 0, size: attributes.len(), mem: attributes.to_vec() };
-            let mut rd = ReadStream::new(&raw, 0);
+            let mut rd = ReadStream::new(&attributes, 0);
+
+            let size = rd.read_u32()?;
+            let attrs_esh: ESH = rd.read()?;
+            for (name, value) in &attrs_esh.props {
+                println!("{} {}", name, value);
+            }
+        }
+
+        println!("");
+        if let ESHValue::Binary(attributes) = &esh.props["Modifiers"] {
+            let mut rd = ReadStream::new(&attributes, 0);
 
             let size = rd.read_u32()?;
             let attrs_esh: ESH = rd.read()?;
@@ -59,8 +68,8 @@ impl World {
     }
 }
 
-pub type WorldOffsetSize = (usize,usize);
-impl DecoderCtx<WorldOffsetSize,()> for World {
+pub type WorldOffsetSize = (usize, usize);
+impl DecoderCtx<WorldOffsetSize, ()> for World {
     fn decode<'a>(enc: &mut ReadStream<'a>, ctx: WorldOffsetSize) -> Result<Self> {
         let offset = ctx.0;
         let size = ctx.1;
@@ -69,14 +78,7 @@ impl DecoderCtx<WorldOffsetSize,()> for World {
         let uncompressed_size = enc.read_u32()?;
         enc.skip(4);
 
-        let data = {
-            let inflated = inflate_bytes_zlib(enc.as_bytes(size)?).map_err(|e| anyhow!(e))?;
-            Raw {
-                offset,
-                size,
-                mem: inflated,
-            }
-        };
+        let data = inflate_bytes_zlib(enc.as_bytes(size)?).map_err(|e| anyhow!(e))?;
         let mut rd = ReadStream::new(&data, 0);
 
         let mission: FString = rd.read()?;
@@ -85,7 +87,7 @@ impl DecoderCtx<WorldOffsetSize,()> for World {
 
         let entlist: EntityList = rd.read_ctx(0, EntityEncoding::World)?;
 
-        let unparsed = rd.read_bytes(data.mem.len() - rd.offset())?;
+        let unparsed = rd.read_bytes(data.len() - rd.offset())?;
 
         Ok(World {
             offset,
@@ -104,7 +106,7 @@ impl DecoderCtx<WorldOffsetSize,()> for World {
     fn encode(&self, wd: &mut WriteStream, _: ()) -> Result<()> {
         let data = {
             let mut wd = WriteStream::new(self.uncompressed_size as usize);
-            
+
             wd.write(&self.mission)?;
             wd.write(&self.sgd)?;
             wd.write(&self.ssg)?;

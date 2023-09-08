@@ -38,11 +38,7 @@ impl Decoder for FString {
         } else {
             // WCS2
             let bytes = rd.as_bytes(len * 2)?;
-            let chars: Vec<u8> = bytes
-                .iter()
-                .step_by(2)
-                .copied()
-                .collect();
+            let chars: Vec<u8> = bytes.iter().step_by(2).copied().collect();
             let (str, _, _) = WINDOWS_1251.decode(&chars);
             Ok(FString {
                 encoding: FStringEncoding::WCS2,

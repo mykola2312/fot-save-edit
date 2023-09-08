@@ -46,7 +46,7 @@ impl Save {
             return Err(anyhow!("Unable to determine world block size"));
         }
 
-        let mut rd = ReadStream::new(&raw, world_offset);
+        let mut rd = ReadStream::new(&raw.mem, world_offset);
         let world = World::decode(&mut rd, (world_offset, world_size))?;
         Ok(Save { raw, world })
     }
