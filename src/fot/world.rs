@@ -13,8 +13,8 @@ use anyhow::Result;
 use deflate::deflate_bytes_zlib;
 use inflate::inflate_bytes_zlib;
 
-use super::esh::{ESHValue, ESH};
 use super::attributes::Attributes;
+use super::esh::{ESHValue, ESH};
 use std::path::Path;
 
 pub struct World {
@@ -39,17 +39,15 @@ impl World {
     pub fn test(&mut self) -> Result<()> {
         //let actor_type = self.entlist.get_type_idx("Actor").unwrap();
         let ent = self.entlist.get_entity(2122);
-        let esh = ent.esh.as_ref().unwrap();
+        let esh = ent.get_esh()?;
         for (name, value) in &esh.props {
             println!("{} {}", name, value);
         }
         //self.entlist.dump_to_entfile(ent, Path::new("D:\\actor.ent"))?;
 
         println!("");
-        if let ESHValue::Binary(binary) = &esh.props["Attributes"] {
-            let attributes = Attributes::from_binary(&binary)?;
-            dbg!(attributes);
-        }
+        let attributes = ent.get_attributes()?;
+        dbg!(attributes);
 
         Ok(())
     }

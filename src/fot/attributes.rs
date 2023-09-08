@@ -4,6 +4,7 @@ use super::tag::Tag;
 use anyhow::{anyhow, Result};
 use indexmap::IndexMap;
 
+const MAX_STATS: usize = 7;
 const STATS: [&str; 7] = [
     "strength",
     "perception",
@@ -14,6 +15,7 @@ const STATS: [&str; 7] = [
     "luck",
 ];
 
+const MAX_TRAITS: usize = 11;
 const TRAITS: [&str; 11] = [
     "experience",
     "skillPoints",
@@ -28,6 +30,7 @@ const TRAITS: [&str; 11] = [
     "race",
 ];
 
+const MAX_DERIVED: usize = 26;
 const DERIVED: [&str; 26] = [
     "maxHitPoints",
     "maxCarryWeight",
@@ -57,6 +60,7 @@ const DERIVED: [&str; 26] = [
     "levelsPerPerk",
 ];
 
+const MAX_SKILLS: usize = 18;
 const SKILLS: [&str; 18] = [
     "smallGuns",
     "bigGuns",
@@ -78,6 +82,7 @@ const SKILLS: [&str; 18] = [
     "outdoorsman",
 ];
 
+const MAX_OPT_TRAITS: usize = 38;
 const OPT_TRAITS: [&str; 38] = [
     "fastMetabolism",
     "bruiser",
@@ -119,6 +124,7 @@ const OPT_TRAITS: [&str; 38] = [
     "doNightPerson",
 ];
 
+const MAX_PERKS: usize = 111;
 const PERKS: [&str; 111] = [
     "awareness",
     "bonusHtHAttacks",
@@ -233,6 +239,7 @@ const PERKS: [&str; 111] = [
     "unk10",
 ];
 
+const MAX_ADDICTIONS: usize = 10;
 const ADDICTIONS: [&str; 10] = [
     "buffoutAddiction",
     "afterburnerAddiction",
@@ -284,28 +291,28 @@ impl Attributes {
             let _ = rd.read_u32()?;
             let _: Tag = rd.read()?;
 
-            for i in 0..7 {
+            for i in 0..MAX_STATS {
                 stats.insert(STATS[i], rd.read_u32()?);
             }
-            for i in 0..11 {
+            for i in 0..MAX_TRAITS {
                 traits.insert(TRAITS[i], rd.read_u32()?);
             }
-            for i in 0..26 {
+            for i in 0..MAX_DERIVED {
                 derived.insert(DERIVED[i], rd.read_u32()?);
             }
-            for i in 0..18 {
+            for i in 0..MAX_SKILLS {
                 skills.insert(SKILLS[i], rd.read_u32()?);
             }
-            for i in 0..18 {
+            for i in 0..MAX_SKILLS {
                 skill_tags.insert(SKILLS[i], rd.read_bool()?);
             }
-            for i in 0..38 {
+            for i in 0..MAX_OPT_TRAITS {
                 opt_traits.insert(OPT_TRAITS[i], rd.read_bool()?);
             }
-            for i in 0..111 {
+            for i in 0..MAX_PERKS {
                 perks.insert(PERKS[i], rd.read_u32()?);
             }
-            for i in 0..10 {
+            for i in 0..MAX_ADDICTIONS {
                 addictions.insert(ADDICTIONS[i], rd.read_u32()?);
             }
 
