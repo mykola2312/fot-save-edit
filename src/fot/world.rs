@@ -1,6 +1,5 @@
 use super::decoder::DecoderCtx;
 use super::entitylist::{EntityEncoding, EntityList};
-use super::esh::ESHValue;
 use super::ferror::FError as FE;
 use super::fstring::FString;
 use super::sgd::SGD;
@@ -28,30 +27,6 @@ pub struct World {
 
 impl World {
     const WORLD_HDR_LEN: usize = 0x13;
-
-    pub fn test(&mut self) -> Result<(), FE> {
-        //let actor_type = self.entlist.get_type_idx("Actor").unwrap();
-        //let ent = self.entlist.get_entity_mut(2122);
-        let ent = self.entlist.get_entity_mut(2122);
-        let esh = ent.get_esh_mut()?;
-        for (name, value) in &esh.props {
-            println!("{} {}", name, value);
-        }
-        //self.entlist.dump_to_entfile(ent, Path::new("D:\\actor.ent"))?;
-
-        println!("");
-        let mut attribs = esh.get_nested("Current Attributes")?;
-        for (name, value) in &attribs.props {
-            println!("{} {}", name, value);
-        }
-
-        attribs.set("hitPoints", ESHValue::Int(999));
-        attribs.set("poisonPoints", ESHValue::Int(0));
-        
-        esh.set_nested("Current Attributes", attribs)?;
-
-        Ok(())
-    }
 }
 
 pub type WorldOffsetSize = (usize, usize);

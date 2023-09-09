@@ -267,12 +267,12 @@ impl ESH {
     pub fn get_nested(&self, name: &str) -> Result<ESH, FE> {
         let value = match self.get(name) {
             Some(value) => value,
-            None => return Err(FE::NoESHValue)
+            None => return Err(FE::NoESHValue),
         };
 
         if let ESHValue::Binary(bin) = value {
             let mut rd = ReadStream::new(bin, 0);
-            
+
             let _ = rd.read_u32()?;
             rd.read::<ESH>()
         } else {

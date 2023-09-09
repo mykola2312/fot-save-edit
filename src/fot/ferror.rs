@@ -12,7 +12,7 @@ pub enum FError {
     NoESHValue,
     ESHValueNonBinary,
     AttributesNonBinary,
-    ValueNoESBIN
+    ValueNoESBIN,
 }
 
 impl std::fmt::Display for FError {
@@ -35,7 +35,7 @@ impl std::fmt::Display for FError {
             FE::NoESHValue => write!(f, "Entity has no specific ESH value"),
             FE::ESHValueNonBinary => write!(f, "ESH value is not binary"),
             FE::AttributesNonBinary => write!(f, "Attributes Binary != true"),
-            FE::ValueNoESBIN => write!(f, "Value has no esbin")
+            FE::ValueNoESBIN => write!(f, "Value has no esbin"),
         }
     }
 }
