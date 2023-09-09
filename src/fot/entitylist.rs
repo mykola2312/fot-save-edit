@@ -1,10 +1,9 @@
 use super::decoder::{Decoder, DecoderCtx};
 use super::entity::Entity;
+use super::ferror::FError as FE;
 use super::fstring::{FString, FStringEncoding};
 use super::stream::{ReadStream, WriteStream};
 use super::tag::{CTag, Tag};
-use anyhow::anyhow;
-use anyhow::Result;
 use std::path::Path;
 
 #[derive(Clone, Copy, PartialEq)]
@@ -66,10 +65,10 @@ impl EntityList {
         &mut self.ents[id - 1]
     }
 
-    pub fn dump_to_entfile(&self, ent: &Entity, path: &Path) -> Result<()> {
+    pub fn dump_to_entfile(&self, ent: &Entity, path: &Path) -> Result<(), FE> {
         let esh = match &ent.esh {
             Some(esh) => esh,
-            None => return Err(anyhow!("entity has no esh")),
+            None => return Err(FE::EntityNoESH),
         };
 
         let tag = DEFAULT_ENTITY_TAG.to_tag();
@@ -87,7 +86,7 @@ impl EntityList {
 }
 
 impl DecoderCtx<EntityEncoding, EntityEncoding> for EntityList {
-    fn decode<'a>(rd: &mut ReadStream<'a>, ctx: EntityEncoding) -> Result<Self> {
+    fn decode<'a>(rd: &mut ReadStream<'a>, ctx: EntityEncoding) -> Result<Self, FE> {
         let offset = rd.offset();
         let mut ent_list = EntityList {
             encoding: ctx,
@@ -137,7 +136,7 @@ impl DecoderCtx<EntityEncoding, EntityEncoding> for EntityList {
         })
     }
 
-    fn encode(&self, wd: &mut WriteStream, ctx: EntityEncoding) -> Result<()> {
+    fn encode(&self, wd: &mut WriteStream, ctx: EntityEncoding) -> Result<(), FE> {
         match ctx {
             EntityEncoding::File => {
                 for ent in self.ents.iter() {

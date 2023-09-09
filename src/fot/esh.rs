@@ -1,8 +1,8 @@
 use super::decoder::Decoder;
+use super::ferror::FError as FE;
 use super::fstring::FString;
 use super::stream::{ReadStream, WriteStream};
 use super::tag::Tag;
-use anyhow::Result;
 use indexmap::IndexMap;
 use std::fmt;
 
@@ -77,7 +77,7 @@ impl ESHValue {
 }
 
 impl Decoder for ESHValue {
-    fn decode<'a>(rd: &mut ReadStream<'a>) -> Result<Self> {
+    fn decode<'a>(rd: &mut ReadStream<'a>) -> Result<Self, FE> {
         let data_type = rd.read_u32()?;
         let data_size = rd.read_u32()?;
 
@@ -120,7 +120,7 @@ impl Decoder for ESHValue {
         })
     }
 
-    fn encode(&self, wd: &mut WriteStream) -> Result<()> {
+    fn encode(&self, wd: &mut WriteStream) -> Result<(), FE> {
         match self {
             ESHValue::Unknown(unk) => {
                 wd.write_u32(unk.data_type)?;
@@ -266,7 +266,7 @@ impl ESH {
 }
 
 impl Decoder for ESH {
-    fn decode<'a>(rd: &mut ReadStream<'a>) -> Result<Self> {
+    fn decode<'a>(rd: &mut ReadStream<'a>) -> Result<Self, FE> {
         let offset = rd.offset();
         let tag: Tag = rd.read()?;
 
@@ -286,7 +286,7 @@ impl Decoder for ESH {
         })
     }
 
-    fn encode(&self, wd: &mut WriteStream) -> Result<()> {
+    fn encode(&self, wd: &mut WriteStream) -> Result<(), FE> {
         wd.write(&self.tag)?;
 
         wd.write_u32(self.props.len() as u32)?;

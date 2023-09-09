@@ -1,9 +1,8 @@
 use super::decoder::DecoderCtx;
+use super::ferror::FError as FE;
 use super::raw::Raw;
 use super::stream::{ReadStream, WriteStream};
 use super::world::World;
-use anyhow::anyhow;
-use anyhow::Result;
 use byteorder::{ByteOrder, LittleEndian};
 use std::path::Path;
 use std::str;
@@ -17,18 +16,18 @@ impl Save {
     const WORLD_TAG: &str = "<world>";
     const CAMPAIGN_TAG: &str = "<campaign>";
 
-    pub fn load(path: &Path) -> Result<Self> {
+    pub fn load(path: &Path) -> Result<Self, FE> {
         let raw = Raw::load_file(path)?;
         let world_offset = match raw.find_str_backwards(Self::WORLD_TAG) {
             Some(offset) => offset,
-            None => return Err(anyhow!("no world found in file")),
+            None => return Err(FE::NoWorld),
         };
 
         let mut world_size: usize = 0;
         {
             let campaign = match raw.find_str(Self::CAMPAIGN_TAG, world_offset) {
                 Some(campaign) => world_offset + campaign,
-                None => return Err(anyhow!("no campaign found after world")),
+                None => return Err(FE::NoCampaign),
             };
 
             for i in (campaign - 256..campaign).rev() {
@@ -43,7 +42,7 @@ impl Save {
             }
         }
         if world_size == 0 {
-            return Err(anyhow!("Unable to determine world block size"));
+            return Err(FE::UnknownWorldSize);
         }
 
         let mut rd = ReadStream::new(&raw.mem, world_offset);
@@ -51,7 +50,7 @@ impl Save {
         Ok(Save { raw, world })
     }
 
-    pub fn save(&self, path: &Path) -> Result<()> {
+    pub fn save(&self, path: &Path) -> Result<(), FE> {
         let raw = {
             let mut wd = WriteStream::new(0);
             wd.write_ctx(&self.world, ())?;

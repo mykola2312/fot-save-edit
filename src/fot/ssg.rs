@@ -1,7 +1,7 @@
 use super::decoder::Decoder;
+use super::ferror::FError as FE;
 use super::stream::{ReadStream, WriteStream};
 use super::tag::Tag;
-use anyhow::Result;
 
 #[derive(Debug)]
 pub struct SSG {
@@ -10,13 +10,13 @@ pub struct SSG {
 }
 
 impl Decoder for SSG {
-    fn decode<'a>(rd: &mut ReadStream<'a>) -> Result<Self> {
+    fn decode<'a>(rd: &mut ReadStream<'a>) -> Result<Self, FE> {
         let tag: Tag = rd.read()?;
         let unk1 = rd.read_bytes(0x14)?;
         Ok(SSG { tag, unk1 })
     }
 
-    fn encode(&self, wd: &mut WriteStream) -> Result<()> {
+    fn encode(&self, wd: &mut WriteStream) -> Result<(), FE> {
         wd.write(&self.tag)?;
         wd.write_bytes(&self.unk1);
         Ok(())

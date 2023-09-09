@@ -2,8 +2,8 @@ use super::attributes::Attributes;
 use super::decoder::DecoderCtx;
 use super::entitylist::{EntityEncoding, EntityList};
 use super::esh::{ESHValue, ESH};
+use super::ferror::FError as FE;
 use super::stream::{ReadStream, WriteStream};
-use anyhow::{anyhow, Result};
 
 pub const NO_FLAGS: u32 = 0;
 pub const NO_ESH: usize = 0xFFFF;
@@ -16,34 +16,34 @@ pub struct Entity {
 }
 
 impl Entity {
-    pub fn get_esh(&self) -> Result<&ESH> {
+    pub fn get_esh(&self) -> Result<&ESH, FE> {
         match &self.esh {
             Some(esh) => Ok(esh),
-            None => Err(anyhow!("Entity has no ESH")),
+            None => Err(FE::EntityNoESH),
         }
     }
 
-    pub fn get_esh_mut(&mut self) -> Result<&mut ESH> {
+    pub fn get_esh_mut(&mut self) -> Result<&mut ESH, FE> {
         match &mut self.esh {
             Some(esh) => Ok(esh),
-            None => Err(anyhow!("Entity has no ESH")),
+            None => Err(FE::EntityNoESH),
         }
     }
 
-    pub fn get_attributes(&self) -> Result<Attributes> {
+    pub fn get_attributes(&self) -> Result<Attributes, FE> {
         let value = match self.get_esh()?.get("Attributes") {
             Some(value) => value,
-            None => return Err(anyhow!("Entity has no Attributes")),
+            None => return Err(FE::EntityNoAttributes),
         };
 
         if let ESHValue::Binary(bin) = value {
             Ok(Attributes::from_binary(&bin)?)
         } else {
-            Err(anyhow!("Attributes is not binary"))
+            Err(FE::AttributesNonBinary)
         }
     }
 
-    pub fn set_attributes(&mut self, attrs: Attributes) -> Result<()> {
+    pub fn set_attributes(&mut self, attrs: Attributes) -> Result<(), FE> {
         self.get_esh_mut()?
             .set("Attributes", ESHValue::Binary(attrs.into_binary()?));
 
@@ -52,7 +52,7 @@ impl Entity {
 }
 
 impl DecoderCtx<&mut EntityList, &EntityList> for Entity {
-    fn decode<'a>(rd: &mut ReadStream<'a>, ctx: &mut EntityList) -> Result<Self> {
+    fn decode<'a>(rd: &mut ReadStream<'a>, ctx: &mut EntityList) -> Result<Self, FE> {
         let offset = rd.offset();
         Ok(match ctx.get_entity_encoding() {
             EntityEncoding::File => {
@@ -87,7 +87,7 @@ impl DecoderCtx<&mut EntityList, &EntityList> for Entity {
         })
     }
 
-    fn encode(&self, wd: &mut WriteStream, ctx: &EntityList) -> Result<()> {
+    fn encode(&self, wd: &mut WriteStream, ctx: &EntityList) -> Result<(), FE> {
         match ctx.get_entity_encoding() {
             EntityEncoding::File => {
                 wd.write(ctx.get_type_name(self.type_idx))?;

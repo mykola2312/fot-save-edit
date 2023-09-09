@@ -1,6 +1,6 @@
 use super::decoder::Decoder;
+use super::ferror::FError as FE;
 use super::stream::{ReadStream, WriteStream};
-use anyhow::Result;
 
 #[derive(Debug)]
 pub struct Tag {
@@ -9,13 +9,13 @@ pub struct Tag {
 }
 
 impl Decoder for Tag {
-    fn decode<'a>(rd: &mut ReadStream<'a>) -> Result<Self> {
+    fn decode<'a>(rd: &mut ReadStream<'a>) -> Result<Self, FE> {
         let name: String = rd.read()?;
         let version: String = rd.read()?;
         Ok(Tag { name, version })
     }
 
-    fn encode(&self, wd: &mut WriteStream) -> Result<()> {
+    fn encode(&self, wd: &mut WriteStream) -> Result<(), FE> {
         wd.write(&self.name)?;
         wd.write(&self.version)?;
         Ok(())
