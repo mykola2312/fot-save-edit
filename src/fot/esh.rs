@@ -263,6 +263,31 @@ impl ESH {
     pub fn set(&mut self, name: &str, value: ESHValue) {
         self.props[name] = value;
     }
+
+    pub fn get_nested(&self, name: &str) -> Result<ESH, FE> {
+        let value = match self.get(name) {
+            Some(value) => value,
+            None => return Err(FE::NoESHValue)
+        };
+
+        if let ESHValue::Binary(bin) = value {
+            let mut rd = ReadStream::new(bin, 0);
+            
+            let _ = rd.read_u32()?;
+            rd.read::<ESH>()
+        } else {
+            Err(FE::ESHValueNonBinary)
+        }
+    }
+
+    pub fn set_nested(&mut self, name: &str, value: ESH) -> Result<(), FE> {
+        let mut wd = WriteStream::new(4 + value.get_enc_size());
+        wd.write_u32(value.get_enc_size() as u32)?;
+        wd.write(&value)?;
+
+        self.set(name, ESHValue::Binary(wd.into_vec()));
+        Ok(())
+    }
 }
 
 impl Decoder for ESH {

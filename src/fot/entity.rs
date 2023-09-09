@@ -33,7 +33,7 @@ impl Entity {
     pub fn get_attributes(&self) -> Result<Attributes, FE> {
         let value = match self.get_esh()?.get("Attributes") {
             Some(value) => value,
-            None => return Err(FE::EntityNoAttributes),
+            None => return Err(FE::NoESHValue),
         };
 
         if let ESHValue::Binary(bin) = value {
@@ -53,7 +53,7 @@ impl Entity {
     pub fn get_modifiers(&self) -> Result<Attributes, FE> {
         let value = match self.get_esh()?.get("Modifiers") {
             Some(value) => value,
-            None => return Err(FE::EntityNoModifiers),
+            None => return Err(FE::NoESHValue),
         };
 
         if let ESHValue::Binary(bin) = value {

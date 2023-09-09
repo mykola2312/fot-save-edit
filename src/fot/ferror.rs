@@ -9,10 +9,10 @@ pub enum FError {
     StreamOverflow(usize, usize, usize),
     NoZeroTerminator,
     EntityNoESH,
-    EntityNoAttributes,
-    EntityNoModifiers,
+    NoESHValue,
+    ESHValueNonBinary,
     AttributesNonBinary,
-    AttributesNoESBIN,
+    ValueNoESBIN
 }
 
 impl std::fmt::Display for FError {
@@ -32,10 +32,10 @@ impl std::fmt::Display for FError {
             ),
             FE::NoZeroTerminator => write!(f, "No zero-terminator when String::decode"),
             FE::EntityNoESH => write!(f, "Entity has no ESH"),
-            FE::EntityNoAttributes => write!(f, "Entity has no Attributes"),
-            FE::EntityNoModifiers => write!(f, "Entity has no Modifiers"),
+            FE::NoESHValue => write!(f, "Entity has no specific ESH value"),
+            FE::ESHValueNonBinary => write!(f, "ESH value is not binary"),
             FE::AttributesNonBinary => write!(f, "Attributes Binary != true"),
-            FE::AttributesNoESBIN => write!(f, "Attributes has no esbin"),
+            FE::ValueNoESBIN => write!(f, "Value has no esbin")
         }
     }
 }
