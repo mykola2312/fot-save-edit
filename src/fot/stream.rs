@@ -1,7 +1,6 @@
 use super::decoder::{Decoder, DecoderCtx};
+use super::ferror::FError as FE;
 use super::raw::Raw;
-use anyhow::anyhow;
-use anyhow::Result;
 use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
 use std::io::Cursor;
 
@@ -37,10 +36,10 @@ impl<'a> ReadStream<'a> {
         &self.mem[self.offset()..]
     }
 
-    pub fn as_bytes(&mut self, size: usize) -> Result<&'a [u8]> {
+    pub fn as_bytes(&mut self, size: usize) -> Result<&'a [u8], FE> {
         if self.offset() + size > self.mem.len() {
             dbg!(self.offset(), size, self.mem.len());
-            Err(anyhow!("as_bytes/read_bytes size is bigger than buffer"))
+            Err(FE::StreamOverflow(self.offset(), self.size(), size))
         } else {
             let buf = &self.mem[self.offset()..self.offset() + size];
             self.skip(size);
@@ -48,7 +47,7 @@ impl<'a> ReadStream<'a> {
         }
     }
 
-    pub fn read_bytes(&mut self, size: usize) -> Result<Vec<u8>> {
+    pub fn read_bytes(&mut self, size: usize) -> Result<Vec<u8>, FE> {
         Ok(self.as_bytes(size)?.to_vec())
     }
 
@@ -58,35 +57,35 @@ impl<'a> ReadStream<'a> {
 
     // read_opt - decode with optional paramters. required for complex structure
     // with different origins (save / entfile) like entities
-    pub fn read_ctx<T: DecoderCtx<DCtx, ECtx>, DCtx, ECtx>(&mut self, ctx: DCtx) -> Result<T> {
+    pub fn read_ctx<T: DecoderCtx<DCtx, ECtx>, DCtx, ECtx>(&mut self, ctx: DCtx) -> Result<T, FE> {
         Ok(T::decode(self, ctx)?)
     }
 
-    pub fn read<T: Decoder>(&mut self) -> Result<T> {
+    pub fn read<T: Decoder>(&mut self) -> Result<T, FE> {
         Ok(T::decode(self)?)
     }
 
-    pub fn read_u8(&mut self) -> Result<u8> {
+    pub fn read_u8(&mut self) -> Result<u8, FE> {
         Ok(self.rdr.read_u8()?)
     }
 
-    pub fn read_bool(&mut self) -> Result<bool> {
+    pub fn read_bool(&mut self) -> Result<bool, FE> {
         Ok(self.read_u8()? != 0)
     }
 
-    pub fn read_u16(&mut self) -> Result<u16> {
+    pub fn read_u16(&mut self) -> Result<u16, FE> {
         Ok(self.rdr.read_u16::<LittleEndian>()?)
     }
 
-    pub fn read_i32(&mut self) -> Result<i32> {
+    pub fn read_i32(&mut self) -> Result<i32, FE> {
         Ok(self.rdr.read_i32::<LittleEndian>()?)
     }
 
-    pub fn read_u32(&mut self) -> Result<u32> {
+    pub fn read_u32(&mut self) -> Result<u32, FE> {
         Ok(self.rdr.read_u32::<LittleEndian>()?)
     }
 
-    pub fn read_f32(&mut self) -> Result<f32> {
+    pub fn read_f32(&mut self) -> Result<f32, FE> {
         Ok(self.rdr.read_f32::<LittleEndian>()?)
     }
 }
@@ -132,39 +131,39 @@ impl WriteStream {
         &mut self,
         val: &T,
         ctx: ECtx,
-    ) -> Result<()> {
+    ) -> Result<(), FE> {
         self.reserve(val.get_enc_size());
         val.encode(self, ctx)?;
         Ok(())
     }
 
-    pub fn write<T: Decoder>(&mut self, val: &T) -> Result<()> {
+    pub fn write<T: Decoder>(&mut self, val: &T) -> Result<(), FE> {
         self.reserve(val.get_enc_size());
         val.encode(self)?;
         Ok(())
     }
 
-    pub fn write_u8(&mut self, val: u8) -> Result<()> {
+    pub fn write_u8(&mut self, val: u8) -> Result<(), FE> {
         Ok(self.buf.write_u8(val)?)
     }
 
-    pub fn write_bool(&mut self, val: bool) -> Result<()> {
+    pub fn write_bool(&mut self, val: bool) -> Result<(), FE> {
         self.write_u8(val as u8)
     }
 
-    pub fn write_u16(&mut self, val: u16) -> Result<()> {
+    pub fn write_u16(&mut self, val: u16) -> Result<(), FE> {
         Ok(self.buf.write_u16::<LittleEndian>(val)?)
     }
 
-    pub fn write_i32(&mut self, val: i32) -> Result<()> {
+    pub fn write_i32(&mut self, val: i32) -> Result<(), FE> {
         Ok(self.buf.write_i32::<LittleEndian>(val)?)
     }
 
-    pub fn write_u32(&mut self, val: u32) -> Result<()> {
+    pub fn write_u32(&mut self, val: u32) -> Result<(), FE> {
         Ok(self.buf.write_u32::<LittleEndian>(val)?)
     }
 
-    pub fn write_f32(&mut self, val: f32) -> Result<()> {
+    pub fn write_f32(&mut self, val: f32) -> Result<(), FE> {
         Ok(self.buf.write_f32::<LittleEndian>(val)?)
     }
 }

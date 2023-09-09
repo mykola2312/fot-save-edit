@@ -1,13 +1,12 @@
 use super::decoder::DecoderCtx;
 use super::entitylist::{EntityEncoding, EntityList};
 use super::esh::ESHValue;
+use super::ferror::FError as FE;
 use super::fstring::FString;
 use super::sgd::SGD;
 use super::ssg::SSG;
 use super::stream::{ReadStream, WriteStream};
 use super::tag::Tag;
-use anyhow::anyhow;
-use anyhow::Result;
 use deflate::deflate_bytes_zlib;
 use inflate::inflate_bytes_zlib;
 
@@ -30,7 +29,7 @@ pub struct World {
 impl World {
     const WORLD_HDR_LEN: usize = 0x13;
 
-    pub fn test(&mut self) -> Result<()> {
+    pub fn test(&mut self) -> Result<(), FE> {
         //let actor_type = self.entlist.get_type_idx("Actor").unwrap();
         //let ent = self.entlist.get_entity_mut(2122);
         let ent = self.entlist.get_entity_mut(2158);
@@ -68,7 +67,7 @@ impl World {
 
 pub type WorldOffsetSize = (usize, usize);
 impl DecoderCtx<WorldOffsetSize, ()> for World {
-    fn decode<'a>(enc: &mut ReadStream<'a>, ctx: WorldOffsetSize) -> Result<Self> {
+    fn decode<'a>(enc: &mut ReadStream<'a>, ctx: WorldOffsetSize) -> Result<Self, FE> {
         let offset = ctx.0;
         let size = ctx.1;
 
@@ -76,7 +75,7 @@ impl DecoderCtx<WorldOffsetSize, ()> for World {
         let uncompressed_size = enc.read_u32()?;
         enc.skip(4);
 
-        let data = inflate_bytes_zlib(enc.as_bytes(size)?).map_err(|e| anyhow!(e))?;
+        let data = inflate_bytes_zlib(enc.as_bytes(size)?).map_err(|e| FE::DeflateError(e))?;
         let mut rd = ReadStream::new(&data, 0);
 
         let mission: FString = rd.read()?;
@@ -101,7 +100,7 @@ impl DecoderCtx<WorldOffsetSize, ()> for World {
         })
     }
 
-    fn encode(&self, wd: &mut WriteStream, _: ()) -> Result<()> {
+    fn encode(&self, wd: &mut WriteStream, _: ()) -> Result<(), FE> {
         let data = {
             let mut wd = WriteStream::new(self.uncompressed_size as usize);
 

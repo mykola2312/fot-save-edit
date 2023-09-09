@@ -1,6 +1,6 @@
 use super::decoder::Decoder;
+use super::ferror::FError as FE;
 use super::stream::{ReadStream, WriteStream};
-use anyhow::Result;
 use encoding_rs::WINDOWS_1251;
 use std::borrow::Borrow;
 use std::fmt;
@@ -22,7 +22,7 @@ pub struct FString {
 }
 
 impl Decoder for FString {
-    fn decode<'a>(rd: &mut ReadStream<'a>) -> Result<Self> {
+    fn decode<'a>(rd: &mut ReadStream<'a>) -> Result<Self, FE> {
         //let mut rdr = Cursor::new(&raw.mem[offset..]);
         let flen = rd.read_u32()? as usize;
         let len = flen & !(1 << 31);
@@ -48,7 +48,7 @@ impl Decoder for FString {
         }
     }
 
-    fn encode(&self, wd: &mut WriteStream) -> Result<()> {
+    fn encode(&self, wd: &mut WriteStream) -> Result<(), FE> {
         let (chars, _, _) = WINDOWS_1251.encode(self.str.as_str());
         if self.encoding == FStringEncoding::ANSI {
             wd.write_u32(chars.len() as u32 & !(1 << 31))?;

@@ -1,9 +1,9 @@
 use crate::fot::decoder::Decoder;
 
 use super::esh::{ESHValue, ESH};
+use super::ferror::FError as FE;
 use super::stream::{ReadStream, WriteStream};
 use super::tag::Tag;
-use anyhow::{anyhow, Result};
 use indexmap::IndexMap;
 
 const MAX_STATS: usize = 7;
@@ -273,13 +273,13 @@ pub struct Attributes {
 }
 
 impl Attributes {
-    pub fn from_binary(bin: &[u8]) -> Result<Self> {
+    pub fn from_binary(bin: &[u8]) -> Result<Self, FE> {
         let mut rd = ReadStream::new(bin, 0);
 
         let size1 = rd.read_u32()?;
         let esh: ESH = rd.read()?;
         if esh.props["Binary"] == ESHValue::Bool(false) {
-            return Err(anyhow!("Attributes Binary == false"));
+            return Err(FE::AttributesNonBinary);
         }
 
         let mut stats: IndexMap<&'static str, u32> = IndexMap::with_capacity(7);
@@ -339,11 +339,11 @@ impl Attributes {
                 addictions,
             })
         } else {
-            return Err(anyhow!("Attributes has no esbin"));
+            return Err(FE::AttributesNoESBIN);
         }
     }
 
-    pub fn into_binary(mut self) -> Result<Vec<u8>> {
+    pub fn into_binary(mut self) -> Result<Vec<u8>, FE> {
         let esbin = {
             let mut wd = WriteStream::new(self.enc_size);
 

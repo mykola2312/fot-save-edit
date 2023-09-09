@@ -1,4 +1,4 @@
-use anyhow::Result;
+use super::ferror::FError as FE;
 use memmem::{Searcher, TwoWaySearcher};
 use std::fs;
 use std::fs::OpenOptions;
@@ -31,7 +31,7 @@ impl Raw {
         None
     }
 
-    pub fn load_file(path: &Path) -> Result<Raw> {
+    pub fn load_file(path: &Path) -> Result<Raw, FE> {
         let mem = fs::read(path)?;
 
         Ok(Self {
@@ -41,7 +41,7 @@ impl Raw {
         })
     }
 
-    pub fn assemble_file(&self, path: &Path, blocks: Vec<Raw>) -> Result<()> {
+    pub fn assemble_file(&self, path: &Path, blocks: Vec<Raw>) -> Result<(), FE> {
         let mut file = BufWriter::new(
             OpenOptions::new()
                 .create(true)
@@ -76,7 +76,7 @@ impl Raw {
         Ok(())
     }
 
-    pub fn dump(&self, path: &Path) -> Result<()> {
+    pub fn dump(&self, path: &Path) -> Result<(), FE> {
         let mut file = BufWriter::new(
             OpenOptions::new()
                 .create(true)

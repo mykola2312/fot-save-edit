@@ -3,6 +3,7 @@ mod decoder;
 mod entity;
 mod entitylist;
 mod esh;
+mod ferror;
 mod fstring;
 mod raw;
 pub mod save;
