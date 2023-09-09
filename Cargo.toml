@@ -2,11 +2,14 @@
 name = "fot-save-edit"
 version = "0.1.0"
 edition = "2021"
+auhtors = ["mykola2312", "puuuuh"]
+repository = "https://github.com/mykola2312/fot-save-edit/"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
 byteorder = "1.4.3"
+clap = { version = "4.4.2", features = ["derive"] }
 deflate = "1.0.0"
 encoding_rs = "0.8.33"
 indexmap = "2.0.0"
