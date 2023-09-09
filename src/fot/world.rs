@@ -40,8 +40,8 @@ impl World {
         //self.entlist.dump_to_entfile(ent, Path::new("D:\\actor.ent"))?;
 
         println!("");
-        let mut attributes = ent.get_attributes()?;
-        if let ESHValue::Binary(bin) = &esh.get("Attributes").unwrap() {
+        let mut attributes = ent.get_modifiers()?;
+        if let ESHValue::Binary(bin) = &esh.get("Modifiers").unwrap() {
             dbg!(bin.len());
         }
         attributes.stats["strength"] = 10;
@@ -54,10 +54,10 @@ impl World {
         for (_, value) in attributes.skills.iter_mut() {
             *value = 300;
         }
-        ent.set_attributes(attributes)?;
+        ent.set_modifiers(attributes)?;
 
         let esh = ent.get_esh()?;
-        if let ESHValue::Binary(bin) = &esh.get("Attributes").unwrap() {
+        if let ESHValue::Binary(bin) = &esh.get("Modifiers").unwrap() {
             dbg!(bin.len());
         }
 

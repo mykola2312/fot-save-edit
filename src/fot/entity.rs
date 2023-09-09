@@ -49,6 +49,26 @@ impl Entity {
 
         Ok(())
     }
+
+    pub fn get_modifiers(&self) -> Result<Attributes, FE> {
+        let value = match self.get_esh()?.get("Modifiers") {
+            Some(value) => value,
+            None => return Err(FE::EntityNoModifiers),
+        };
+
+        if let ESHValue::Binary(bin) = value {
+            Ok(Attributes::from_binary(&bin)?)
+        } else {
+            Err(FE::AttributesNonBinary)
+        }
+    }
+
+    pub fn set_modifiers(&mut self, attrs: Attributes) -> Result<(), FE> {
+        self.get_esh_mut()?
+            .set("Modifiers", ESHValue::Binary(attrs.into_binary()?));
+
+        Ok(())
+    }
 }
 
 impl DecoderCtx<&mut EntityList, &EntityList> for Entity {

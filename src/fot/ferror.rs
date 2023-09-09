@@ -10,6 +10,7 @@ pub enum FError {
     NoZeroTerminator,
     EntityNoESH,
     EntityNoAttributes,
+    EntityNoModifiers,
     AttributesNonBinary,
     AttributesNoESBIN,
 }
@@ -32,6 +33,7 @@ impl std::fmt::Display for FError {
             FE::NoZeroTerminator => write!(f, "No zero-terminator when String::decode"),
             FE::EntityNoESH => write!(f, "Entity has no ESH"),
             FE::EntityNoAttributes => write!(f, "Entity has no Attributes"),
+            FE::EntityNoModifiers => write!(f, "Entity has no Modifiers"),
             FE::AttributesNonBinary => write!(f, "Attributes Binary != true"),
             FE::AttributesNoESBIN => write!(f, "Attributes has no esbin"),
         }
