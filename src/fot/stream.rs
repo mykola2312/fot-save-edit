@@ -115,10 +115,6 @@ impl WriteStream {
         }
     }
 
-    pub fn offset(&self) -> usize {
-        self.buf.position() as usize
-    }
-
     pub fn skip(&mut self, size: usize) {
         self.buf.set_position(self.buf.position() + size as u64);
     }

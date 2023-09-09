@@ -1,4 +1,4 @@
-use super::decoder::{Decoder, DecoderCtx};
+use super::decoder::DecoderCtx;
 use super::raw::Raw;
 use super::stream::{ReadStream, WriteStream};
 use super::world::World;

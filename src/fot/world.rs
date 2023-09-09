@@ -1,9 +1,7 @@
-use crate::fot::attributes;
-
 use super::decoder::DecoderCtx;
 use super::entitylist::{EntityEncoding, EntityList};
+use super::esh::ESHValue;
 use super::fstring::FString;
-use super::raw::Raw;
 use super::sgd::SGD;
 use super::ssg::SSG;
 use super::stream::{ReadStream, WriteStream};
@@ -12,10 +10,6 @@ use anyhow::anyhow;
 use anyhow::Result;
 use deflate::deflate_bytes_zlib;
 use inflate::inflate_bytes_zlib;
-
-use super::attributes::Attributes;
-use super::esh::{ESHValue, ESH};
-use std::path::Path;
 
 pub struct World {
     pub offset: usize,
