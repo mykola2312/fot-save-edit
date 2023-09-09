@@ -178,3 +178,12 @@ impl<'a> IntoIterator for &'a EntityList {
         (1..).zip(&self.ents)
     }
 }
+
+impl<'a> IntoIterator for &'a mut EntityList {
+    type Item = (usize, &'a mut Entity);
+    type IntoIter = std::iter::Zip<std::ops::RangeFrom<usize>, std::slice::IterMut<'a, Entity>>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        (1..).zip(&mut self.ents)
+    }
+}

@@ -32,6 +32,10 @@ impl World {
     pub fn test(&mut self) -> Result<(), FE> {
         //let actor_type = self.entlist.get_type_idx("Actor").unwrap();
         //let ent = self.entlist.get_entity_mut(2122);
+        for (id, ent) in &mut self.entlist {
+            ent.flags = 1;   
+        }
+
         let ent = self.entlist.get_entity_mut(2158);
         let esh = ent.get_esh()?;
         for (name, value) in &esh.props {
