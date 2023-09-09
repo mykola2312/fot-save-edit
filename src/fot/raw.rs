@@ -15,19 +15,6 @@ pub struct Raw {
 }
 
 impl Raw {
-    pub fn join(offset: usize, size: usize, raws: &mut [Raw]) -> Raw {
-        let mut mem: Vec<u8> = Vec::new();
-        for raw in raws.iter_mut() {
-            mem.append(&mut raw.mem);
-        }
-
-        Raw {
-            offset: offset,
-            size: size,
-            mem: mem,
-        }
-    }
-
     pub fn find_str(&self, str: &str, offset: usize) -> Option<usize> {
         let search = TwoWaySearcher::new(str.as_bytes());
         search.search_in(&self.mem[offset..])
