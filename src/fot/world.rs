@@ -32,38 +32,23 @@ impl World {
     pub fn test(&mut self) -> Result<(), FE> {
         //let actor_type = self.entlist.get_type_idx("Actor").unwrap();
         //let ent = self.entlist.get_entity_mut(2122);
-        for (id, ent) in &mut self.entlist {
-            ent.flags = 1;   
-        }
-
-        let ent = self.entlist.get_entity_mut(2158);
-        let esh = ent.get_esh()?;
+        let ent = self.entlist.get_entity_mut(2122);
+        let esh = ent.get_esh_mut()?;
         for (name, value) in &esh.props {
             println!("{} {}", name, value);
         }
         //self.entlist.dump_to_entfile(ent, Path::new("D:\\actor.ent"))?;
 
         println!("");
-        let mut attributes = ent.get_modifiers()?;
-        if let ESHValue::Binary(bin) = &esh.get("Modifiers").unwrap() {
-            dbg!(bin.len());
+        let mut attribs = esh.get_nested("Current Attributes")?;
+        for (name, value) in &attribs.props {
+            println!("{} {}", name, value);
         }
-        attributes.stats["strength"] = 10;
-        attributes.stats["perception"] = 10;
-        attributes.stats["endurance"] = 10;
-        attributes.stats["charisma"] = 10;
-        attributes.stats["intelligence"] = 10;
-        attributes.stats["agility"] = 10;
-        attributes.stats["luck"] = 10;
-        for (_, value) in attributes.skills.iter_mut() {
-            *value = 300;
-        }
-        ent.set_modifiers(attributes)?;
 
-        let esh = ent.get_esh()?;
-        if let ESHValue::Binary(bin) = &esh.get("Modifiers").unwrap() {
-            dbg!(bin.len());
-        }
+        attribs.set("hitPoints", ESHValue::Int(999));
+        attribs.set("poisonPoints", ESHValue::Int(0));
+        
+        esh.set_nested("Current Attributes", attribs)?;
 
         Ok(())
     }

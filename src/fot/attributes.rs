@@ -339,7 +339,7 @@ impl Attributes {
                 addictions,
             })
         } else {
-            return Err(FE::AttributesNoESBIN);
+            return Err(FE::ValueNoESBIN);
         }
     }
 
