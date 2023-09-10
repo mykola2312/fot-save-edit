@@ -5,7 +5,6 @@ use std::io::{stdout, BufWriter, Write};
 use std::path::Path;
 
 mod fot;
-use fot::attributes::*;
 use fot::entity::Entity;
 use fot::entitylist::EntityList;
 use fot::save::Save;
@@ -25,6 +24,14 @@ struct Cli {
     #[arg(short, long)]
     output: String,
 
+    /// Selected entities ids
+    #[arg(long)]
+    ids: Option<String>,
+
+    /// key=value pairs to find entities (i.e. key1=value1,key2=value2 will return entities with one of the matching pairs)
+    #[arg(long)]
+    find: Option<String>,
+
     #[command(subcommand)]
     command: Commands,
 }
@@ -39,13 +46,9 @@ enum Kind {
 enum Commands {
     ListEntities,
     /// Find entities, kv = key1=value,key2=value2
-    FindEntities {
-        find: String,
-    },
-    ListValues {
-        ids: Option<String>,
-        find: Option<String>,
-    },
+    FindEntities,
+    /// List ESH values of selected entities
+    ListValues
 }
 
 fn log_entities<'a>(entlist: &EntityList, iter: impl IntoIterator<Item = (usize, &'a Entity)>) {
@@ -115,6 +118,22 @@ fn get_entities(
     }
 }
 
+fn list_values(ent: &Entity) {
+    let mut bf = BufWriter::new(stdout().lock());
+    let esh = match ent.esh.as_ref() {
+        Some(esh) => esh,
+        None => {
+            write!(bf, "<no ESH>\n").expect("stdout");
+            return;
+        }
+    };
+
+    for (name, value) in &esh.props {
+        write!(bf, "{}\t{}\n", name, value).expect("stdout");
+    }
+    write!(bf, "\n").expect("stdout");
+}
+
 fn do_save(cli: Cli) {
     let mut save = match Save::load(Path::new(cli.input.as_str())) {
         Ok(save) => save,
@@ -126,11 +145,13 @@ fn do_save(cli: Cli) {
         Commands::ListEntities => {
             log_entities(entlist, entlist.into_iter());
         }
-        Commands::FindEntities { find } => {
-            log_entities(entlist, find_entities(entlist, find));
+        Commands::FindEntities => {
+            log_entities(entlist, find_entities(entlist, cli.find.unwrap()));
         }
-        Commands::ListValues { ids, find } => {
-            let entities = get_entities(entlist, ids, find);
+        Commands::ListValues => {
+            for (_, ent) in get_entities(entlist, cli.ids, cli.find) {
+                list_values(ent);
+            }
         }
     }
 }
