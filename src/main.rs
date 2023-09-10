@@ -6,6 +6,7 @@ use std::path::Path;
 
 mod fot;
 use fot::attributes::Attributes;
+use fot::esh::ESHValue;
 use fot::entity::Entity;
 use fot::entitylist::EntityList;
 use fot::save::Save;
@@ -50,6 +51,11 @@ enum Commands {
     FindEntities,
     /// List ESH values of selected entities
     ListValues,
+    /// Write ESH value to entity
+    WriteValue {
+        name: String,
+        value: String
+    },
     /// List entity attributes (like special stats and skills)
     ListAttributes,
     /// List entity modifiers (buffs/debuffs for attributes)
@@ -205,6 +211,21 @@ fn list_values(ent: &Entity) {
     write!(bf, "\n").expect("stdout");
 }
 
+fn write_value(ent: &mut Entity, name: &String, value: &String) {
+    let esh = ent.get_esh_mut().expect("failed to get esh");
+
+    use ESHValue as EV;
+    match esh.props.get_mut(name.as_str()).unwrap() {
+        EV::Bool(val) => *val = value.parse().expect("parse"),
+        EV::Float(val) => *val = value.parse().expect("parse"),
+        EV::Int(val) => *val = value.parse().expect("parse"),
+        EV::String(val) => val.str = value.clone(),
+        EV::Sprite(val) => val.str = value.clone(),
+        EV::Enum(val) => val.str = value.clone(),
+        _ => panic!("unsupported ESH type input")
+    }
+}
+
 fn log_attributes(attrs: Attributes) {
     let mut bf = BufWriter::new(stdout().lock());
 
@@ -301,6 +322,12 @@ fn do_save(cli: Cli) {
                 list_values(ent);
             }
         }
+        Commands::WriteValue { name, value } => {
+            for (_, ent) in get_entities_mut(&mut save.world.entlist, cli.ids, cli.find) {
+                write_value(ent, &name, &value);
+            }
+            save.save(Path::new(&cli.output)).expect("failed to save");
+        }
         Commands::ListAttributes => {
             for (_, ent) in get_entities(entlist, cli.ids, cli.find) {
                 list_attributes(ent);
@@ -313,13 +340,13 @@ fn do_save(cli: Cli) {
         }
         Commands::WriteAttribute { group, name, value } => {
             for (_, ent) in get_entities_mut(&mut save.world.entlist, cli.ids, cli.find) {
-                write_attribute(ent, group.as_str(), name.as_str(), value.as_str())
+                write_attribute(ent, group.as_str(), name.as_str(), value.as_str());
             }
             save.save(Path::new(&cli.output)).expect("failed to save");
         }
         Commands::WriteModifier { group, name, value } => {
             for (_, ent) in get_entities_mut(&mut save.world.entlist, cli.ids, cli.find) {
-                write_modifier(ent, group.as_str(), name.as_str(), value.as_str())
+                write_modifier(ent, group.as_str(), name.as_str(), value.as_str());
             }
             save.save(Path::new(&cli.output)).expect("failed to save");
         }
