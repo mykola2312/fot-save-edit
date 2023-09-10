@@ -6,7 +6,7 @@ use std::path::Path;
 
 mod fot;
 use fot::attributes::Attributes;
-use fot::esh::ESHValue;
+use fot::esh::{ESH, ESHValue};
 use fot::entity::Entity;
 use fot::entitylist::EntityList;
 use fot::save::Save;
@@ -53,6 +53,16 @@ enum Commands {
     ListValues,
     /// Write ESH value to entity
     WriteValue {
+        name: String,
+        value: String
+    },
+    /// Read nested ESH value from entity's ESH
+    ReadNested {
+        nested: String
+    },
+    /// Write ESH "value" on "name" into nested ESH at "nested" in entity's ESH
+    WriteNested {
+        nested: String,
         name: String,
         value: String
     },
@@ -195,25 +205,24 @@ fn get_entities_mut(
     }
 }
 
-fn list_values(ent: &Entity) {
+fn log_esh(esh: &ESH) {
     let mut bf = BufWriter::new(stdout().lock());
-    let esh = match ent.esh.as_ref() {
-        Some(esh) => esh,
-        None => {
-            write!(bf, "<no ESH>\n").expect("stdout");
-            return;
-        }
-    };
-
     for (name, value) in &esh.props {
         write!(bf, "{}\t{}\n", name, value).expect("stdout");
     }
     write!(bf, "\n").expect("stdout");
 }
 
-fn write_value(ent: &mut Entity, name: &String, value: &String) {
-    let esh = ent.get_esh_mut().expect("failed to get esh");
+fn list_values(ent: &Entity) {
+    let esh = match ent.esh.as_ref() {
+        Some(esh) => esh,
+        None => return
+    };
 
+    log_esh(esh);
+}
+
+fn write_esh(esh: &mut ESH, name: &String, value: &String) {
     use ESHValue as EV;
     match esh.props.get_mut(name.as_str()).unwrap() {
         EV::Bool(val) => *val = value.parse().expect("parse"),
@@ -222,8 +231,27 @@ fn write_value(ent: &mut Entity, name: &String, value: &String) {
         EV::String(val) => val.str = value.clone(),
         EV::Sprite(val) => val.str = value.clone(),
         EV::Enum(val) => val.str = value.clone(),
+        EV::EntityFlags(val) => val.entity_id = value.parse().expect("parse"),
         _ => panic!("unsupported ESH type input")
     }
+}
+
+fn write_value(ent: &mut Entity, name: &String, value: &String) {
+    let esh = ent.get_esh_mut().expect("failed to get esh");
+    write_esh(esh, name, value);
+}
+
+fn read_nested(ent: &Entity, nested: &String) {
+    let esh = ent.get_esh().expect("failed to get esh");
+    let nested_esh = esh.get_nested(nested.as_str()).expect("failed to get nested");
+    log_esh(&nested_esh);
+}
+
+fn write_nested(ent: &mut Entity, nested: &String, name: &String, value: &String) {
+    let esh = ent.get_esh_mut().expect("failed to get esh");
+    let mut nested_esh = esh.get_nested(nested.as_str()).expect("failed to get nested");
+    write_esh(&mut nested_esh, name, value);
+    esh.set_nested(nested.as_str(), nested_esh).expect("failed to set nested esh");
 }
 
 fn log_attributes(attrs: Attributes) {
@@ -325,6 +353,17 @@ fn do_save(cli: Cli) {
         Commands::WriteValue { name, value } => {
             for (_, ent) in get_entities_mut(&mut save.world.entlist, cli.ids, cli.find) {
                 write_value(ent, &name, &value);
+            }
+            save.save(Path::new(&cli.output)).expect("failed to save");
+        }
+        Commands::ReadNested { nested } => {
+            for (_, ent) in get_entities(entlist, cli.ids, cli.find) {
+                read_nested(ent, &nested)
+            }
+        }
+        Commands::WriteNested { nested, name, value } => {
+            for (_, ent) in get_entities_mut(&mut save.world.entlist, cli.ids, cli.find) {
+                write_nested(ent, &nested, &name, &value)
             }
             save.save(Path::new(&cli.output)).expect("failed to save");
         }
