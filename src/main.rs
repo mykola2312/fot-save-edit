@@ -5,9 +5,9 @@ use std::io::{stdout, BufWriter, Write};
 use std::path::Path;
 
 mod fot;
+use fot::attributes::Attributes;
 use fot::entity::Entity;
 use fot::entitylist::EntityList;
-use fot::attributes::Attributes;
 use fot::save::Save;
 
 #[derive(Parser)]
@@ -53,7 +53,19 @@ enum Commands {
     /// List entity attributes (like special stats and skills)
     ListAttributes,
     /// List entity modifiers (buffs/debuffs for attributes)
-    ListModifiers
+    ListModifiers,
+    /// Write attribute value where group is stats/traits/derived/skills/skill_tags/opt_traits/perks/addictions
+    WriteAttribute {
+        group: String,
+        name: String,
+        value: String,
+    },
+    /// Write modifier value where group is stats/traits/derived/skills/skill_tags/opt_traits/perks/addictions
+    WriteModifier {
+        group: String,
+        name: String,
+        value: String,
+    },
 }
 
 fn log_entities<'a>(entlist: &EntityList, iter: impl IntoIterator<Item = (usize, &'a Entity)>) {
@@ -86,6 +98,22 @@ fn from_ids(entlist: &EntityList, line: String) -> HashMap<usize, &Entity> {
         .collect::<HashMap<usize, &Entity>>()
 }
 
+fn from_ids_mut(entlist: &mut EntityList, line: String) -> HashMap<usize, &mut Entity> {
+    let mut entities: HashMap<usize, &mut Entity> = HashMap::new();
+    let ids: Vec<usize> = line
+        .split(",")
+        .map(|id| id.parse().expect("id parse"))
+        .collect();
+    
+    for (id, ent) in entlist {
+        if ids.contains(&id) {
+            entities.insert(id, ent);
+        }
+    }
+
+    entities
+}
+
 fn find_entities(entlist: &EntityList, line: String) -> HashMap<usize, &Entity> {
     let kv = parse_kv(&line);
     let mut entities: HashMap<usize, &Entity> = HashMap::new();
@@ -109,6 +137,30 @@ fn find_entities(entlist: &EntityList, line: String) -> HashMap<usize, &Entity> 
     entities
 }
 
+fn find_entities_mut(entlist: &mut EntityList, line: String) -> HashMap<usize, &mut Entity> {
+    let kv = parse_kv(&line);
+    let mut entities: HashMap<usize, &mut Entity> = HashMap::new();
+    for (id, ent) in entlist {
+        let esh = match &ent.esh {
+            Some(esh) => esh,
+            None => continue,
+        };
+
+        'check: for (name, value) in &esh.props {
+            let key = name.str.as_str();
+            let svalue = value.to_string();
+            for (k, v) in &kv {
+                if key == *k && svalue == *v {
+                    entities.insert(id, ent);
+                    break 'check;
+                }
+            }
+        }
+    }
+
+    entities
+}
+
 fn get_entities(
     entlist: &EntityList,
     ids: Option<String>,
@@ -118,6 +170,20 @@ fn get_entities(
         from_ids(entlist, ids)
     } else if let Some(find) = find {
         find_entities(entlist, find)
+    } else {
+        panic!("No entity selector provided!")
+    }
+}
+
+fn get_entities_mut(
+    entlist: &mut EntityList,
+    ids: Option<String>,
+    find: Option<String>,
+) -> HashMap<usize, &mut Entity> {
+    if let Some(ids) = ids {
+        from_ids_mut(entlist, ids)
+    } else if let Some(find) = find {
+        find_entities_mut(entlist, find)
     } else {
         panic!("No entity selector provided!")
     }
@@ -179,15 +245,41 @@ fn log_attributes(attrs: Attributes) {
 fn list_attributes(ent: &Entity) {
     match ent.get_attributes() {
         Ok(attrs) => log_attributes(attrs),
-        Err(e) => panic!("Fatal Error {}", e)
+        Err(e) => panic!("Fatal Error {}", e),
     }
 }
 
 fn list_modifiers(ent: &Entity) {
     match ent.get_modifiers() {
         Ok(attrs) => log_attributes(attrs),
-        Err(e) => panic!("Fatal Error {}", e)
+        Err(e) => panic!("Fatal Error {}", e),
     }
+}
+
+fn write_attribute_value(attrs: &mut Attributes, group: &str, name: &str, value: &str) {
+    match group {
+        "stats" => attrs.stats[name] = value.parse().expect("parse"),
+        "traits" => attrs.traits[name] = value.parse().expect("parse"),
+        "derived" => attrs.derived[name] = value.parse().expect("parse"),
+        "skills" => attrs.skills[name] = value.parse().expect("parse"),
+        "skill_tags" => attrs.skill_tags[name] = value.parse().expect("parse"),
+        "opt_traits" => attrs.opt_traits[name] = value.parse().expect("parse"),
+        "perks" => attrs.perks[name] = value.parse().expect("parse"),
+        "addictions" => attrs.addictions[name] = value.parse().expect("parse"),
+        _ => panic!("invalid group specified"),
+    }
+}
+
+fn write_attribute(ent: &mut Entity, group: &str, name: &str, value: &str) {
+    let mut attrs = ent.get_attributes().expect("get_attributes");
+    write_attribute_value(&mut attrs, group, name, value);
+    ent.set_attributes(attrs).expect("set_attributes");
+}
+
+fn write_modifier(ent: &mut Entity, group: &str, name: &str, value: &str) {
+    let mut attrs = ent.get_modifiers().expect("modifiers");
+    write_attribute_value(&mut attrs, group, name, value);
+    ent.set_modifiers(attrs).expect("set_modifiers");
 }
 
 fn do_save(cli: Cli) {
@@ -218,6 +310,18 @@ fn do_save(cli: Cli) {
             for (_, ent) in get_entities(entlist, cli.ids, cli.find) {
                 list_modifiers(ent);
             }
+        }
+        Commands::WriteAttribute { group, name, value } => {
+            for (_, ent) in get_entities_mut(&mut save.world.entlist, cli.ids, cli.find) {
+                write_attribute(ent, group.as_str(), name.as_str(), value.as_str())
+            }
+            save.save(Path::new(&cli.output)).expect("failed to save");
+        }
+        Commands::WriteModifier { group, name, value } => {
+            for (_, ent) in get_entities_mut(&mut save.world.entlist, cli.ids, cli.find) {
+                write_modifier(ent, group.as_str(), name.as_str(), value.as_str())
+            }
+            save.save(Path::new(&cli.output)).expect("failed to save");
         }
     }
 }
