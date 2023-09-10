@@ -7,6 +7,7 @@ use std::path::Path;
 mod fot;
 use fot::entity::Entity;
 use fot::entitylist::EntityList;
+use fot::attributes::Attributes;
 use fot::save::Save;
 
 #[derive(Parser)]
@@ -48,7 +49,11 @@ enum Commands {
     /// Find entities, kv = key1=value,key2=value2
     FindEntities,
     /// List ESH values of selected entities
-    ListValues
+    ListValues,
+    /// List entity attributes (like special stats and skills)
+    ListAttributes,
+    /// List entity modifiers (buffs/debuffs for attributes)
+    ListModifiers
 }
 
 fn log_entities<'a>(entlist: &EntityList, iter: impl IntoIterator<Item = (usize, &'a Entity)>) {
@@ -134,6 +139,57 @@ fn list_values(ent: &Entity) {
     write!(bf, "\n").expect("stdout");
 }
 
+fn log_attributes(attrs: Attributes) {
+    let mut bf = BufWriter::new(stdout().lock());
+
+    write!(bf, "stats\n").expect("stdout");
+    for (name, value) in attrs.stats {
+        write!(bf, "\t{}\t{}\n", name, value).expect("stdout");
+    }
+    write!(bf, "traits\n").expect("stdout");
+    for (name, value) in attrs.traits {
+        write!(bf, "\t{}\t{}\n", name, value).expect("stdout");
+    }
+    write!(bf, "derived\n").expect("stdout");
+    for (name, value) in attrs.derived {
+        write!(bf, "\t{}\t{}\n", name, value).expect("stdout");
+    }
+    write!(bf, "skills\n").expect("stdout");
+    for (name, value) in attrs.skills {
+        write!(bf, "\t{}\t{}\n", name, value).expect("stdout");
+    }
+    write!(bf, "skill_tags\n").expect("stdout");
+    for (name, value) in attrs.skill_tags {
+        write!(bf, "\t{}\t{}\n", name, value).expect("stdout");
+    }
+    write!(bf, "opt_traits\n").expect("stdout");
+    for (name, value) in attrs.opt_traits {
+        write!(bf, "\t{}\t{}\n", name, value).expect("stdout");
+    }
+    write!(bf, "perks\n").expect("stdout");
+    for (name, value) in attrs.perks {
+        write!(bf, "\t{}\t{}\n", name, value).expect("stdout");
+    }
+    write!(bf, "addictions\n").expect("stdout");
+    for (name, value) in attrs.addictions {
+        write!(bf, "\t{}\t{}\n", name, value).expect("stdout");
+    }
+}
+
+fn list_attributes(ent: &Entity) {
+    match ent.get_attributes() {
+        Ok(attrs) => log_attributes(attrs),
+        Err(e) => panic!("Fatal Error {}", e)
+    }
+}
+
+fn list_modifiers(ent: &Entity) {
+    match ent.get_modifiers() {
+        Ok(attrs) => log_attributes(attrs),
+        Err(e) => panic!("Fatal Error {}", e)
+    }
+}
+
 fn do_save(cli: Cli) {
     let mut save = match Save::load(Path::new(cli.input.as_str())) {
         Ok(save) => save,
@@ -151,6 +207,16 @@ fn do_save(cli: Cli) {
         Commands::ListValues => {
             for (_, ent) in get_entities(entlist, cli.ids, cli.find) {
                 list_values(ent);
+            }
+        }
+        Commands::ListAttributes => {
+            for (_, ent) in get_entities(entlist, cli.ids, cli.find) {
+                list_attributes(ent);
+            }
+        }
+        Commands::ListModifiers => {
+            for (_, ent) in get_entities(entlist, cli.ids, cli.find) {
+                list_modifiers(ent);
             }
         }
     }
