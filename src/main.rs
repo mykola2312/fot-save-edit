@@ -19,8 +19,8 @@ struct Cli {
     input: String,
 
     // Specify save file or ent file type
-    #[arg(value_enum)]
-    kind: Kind,
+    //#[arg(value_enum)]
+    //kind: Kind,
 
     /// Output file path
     #[arg(short, long)]
@@ -395,11 +395,5 @@ fn do_save(cli: Cli) {
 fn main() {
     let cli = Cli::parse();
 
-    match cli.kind {
-        Kind::Save => do_save(cli),
-        Kind::Ent => todo!(),
-    }
-
-    //let mut save = Save::load(Path::new(save_path)).expect("load save");
-    //save.save(Path::new(out_path)).expect("failed to save");
+    do_save(cli);
 }
