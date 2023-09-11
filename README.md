@@ -31,7 +31,7 @@ First of all, there is ```-i``` option where you tell path to .sav file (i.e "C:
 Then there is ```-o``` option which tells output file path, a new edited file save
 
 **Let's begin!**
-We nned tofind entity of our player. This can be achieved by ```find-entities``` command with ```--find``` option. 
+We need to find entity of our player. This can be achieved by ```find-entities``` command with ```--find``` option. 
 In ```--find``` option we can entity by value of their properties, for example by slot on the screen
 
 ![](readme/gui-slot.webp)
