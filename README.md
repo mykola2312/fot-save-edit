@@ -11,6 +11,9 @@ This is CLI (and in future will be GUI) program aimed to decode and encode save 
 
 You can use this program to edit stats of any your characters in game, as well of editing properties of entities.
 
+## Download
+**To download navigate to [Releases](https://github.com/mykola2312/fot-save-edit/releases)**
+
 ## How to use
 Type ```--help``` option to see help
 
