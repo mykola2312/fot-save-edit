@@ -24,7 +24,7 @@ Type ```--help``` option to see help
 In my Fallout Tactics playthrough I was unlucky saved at the moment when Jo instantly died from poison being at 1 HP
 ![](readme/problem.webp)
 
-In this example we will edit Jo character to increase their health, remove poisoning and edit stats and skills, and after all - save her from insta-dying
+In this example we will edit Jo character to increase her health, remove poisoning and edit stats and skills, and after all - save her from insta-dying
 
 First of all, there is ```-i``` option where you tell path to .sav file (i.e "C:\Games\Fallout_Tactics\core\user\save\test.sav")
 
@@ -32,7 +32,7 @@ Then there is ```-o``` option which tells output file path, a new edited file sa
 
 **Let's begin!**
 We need to find entity of our player. This can be achieved by ```find-entities``` command with ```--find``` option. 
-In ```--find``` option we can entity by value of their properties, for example by slot on the screen
+In ```--find``` option we can match entities by value of their properties, for example by slot on the screen
 
 ![](readme/gui-slot.webp)
 
