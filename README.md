@@ -65,7 +65,7 @@ Note here that we modify already modified out.sav so we won't overwrite new save
 ```fot-save-edit.exe --input "out.sav" --output "out.sav" --find GuiSlot=6 write-nested "Current Attributes" hitPoints 20```
 ![](readme/write-nested.webp)
 
-Here she is! Alive, without poisoning and with 20 hit points we write! Let's buff her small guns skill to 300!
+Here she is! Alive, without poisoning and with 20 hit points we wrote! Let's buff her small guns skill to 300!
 
 But first let's see her skills (attributes and modifiers)
 
